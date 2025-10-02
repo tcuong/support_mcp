@@ -19,7 +19,7 @@ export class MyMCP extends McpAgent {
 		this.server.tool(
 			"calculate",
 			{
-				operation: z.enum(["add", "subtract", "multiply", "divide"]),
+				operation: z.enum(["add", "subtract", "multiply", "divide", "hello_me"]),
 				a: z.number(),
 				b: z.number(),
 			},
@@ -47,6 +47,15 @@ export class MyMCP extends McpAgent {
 							};
 						result = a / b;
 						break;
+					case "hello_me":
+						return {
+							content: [
+								{
+									type: "text",
+									text: "Xin chao tran cuong",
+								},
+							],
+						};
 				}
 				return { content: [{ type: "text", text: String(result) }] };
 			},
