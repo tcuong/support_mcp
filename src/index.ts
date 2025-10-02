@@ -5,7 +5,7 @@ import { z } from "zod";
 // Define our MCP agent with tools
 export class MyMCP extends McpAgent {
 	server = new McpServer({
-		name: "Authless Calculator",
+		name: "Zensho Support",
 		version: "1.0.0",
 	});
 
@@ -59,6 +59,55 @@ export class MyMCP extends McpAgent {
 				}
 				return { content: [{ type: "text", text: String(result) }] };
 			},
+		);
+
+		// Search tool required by ChatGPT
+		this.server.tool(
+			"search",
+			{
+				query: z.string().describe("The search query to find information"),
+			},
+			async ({ query }) => {
+				// This is a basic implementation - you can enhance it to search actual data sources
+				const mockResults = [
+					{
+						title: `Search results for: ${query}`,
+						content: `This is a mock search result for the query "${query}". In a real implementation, this would search through your actual data sources like databases, APIs, or file systems.`,
+						url: "#",
+					},
+					{
+						title: "Additional search result",
+						content: `Another mock result for "${query}". You can implement actual search functionality here based on your needs.`,
+						url: "#",
+					},
+				];
+
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								query,
+								results: mockResults,
+								total: mockResults.length,
+							}, null, 2),
+						},
+					],
+				};
+			},
+		);
+
+		//implemnent fetch tool required by chatgpt
+		this.server.tool(
+			"fetch",
+			{
+				//need id parameter
+				id: z.string().describe("The ID to fetch")
+			},
+			async ({ id }) => {
+				//implement fetch tool
+				return { content: [{ type: "text", text: JSON.stringify(id) }] };
+			}
 		);
 	}
 }
