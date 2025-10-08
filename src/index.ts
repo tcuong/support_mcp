@@ -10,10 +10,52 @@ export class MyMCP extends McpAgent {
 	});
 
 	async init() {
-		// Simple addition tool
-		this.server.tool("add", { a: z.number(), b: z.number() }, async ({ a, b }) => ({
-			content: [{ type: "text", text: String(a + b) }],
-		}));
+		// Browse tool that calls Zensho API
+		this.server.tool(
+			"browse", 
+			{ url: z.string().describe("The URL to browse") },
+			{
+				description: "Browse and fetch content from a URL using the Zensho API. Returns the scraped content and metadata."
+			},
+			async ({ url }) => {
+			try {
+				const response = await fetch('https://scarflike-prepositionally-azariah.ngrok-free.dev/zensho/browse', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						url: url,
+						oneCommentOnly: false
+					})
+				});
+
+				if (!response.ok) {
+					return {
+						content: [{
+							type: "text",
+							text: `Error: HTTP ${response.status} - ${response.statusText}`
+						}]
+					};
+				}
+
+				const data = await response.json();
+				console.log(data);
+				return {
+					content: [{
+						type: "text",
+						text: JSON.stringify(data, null, 2)
+					}]
+				};
+			} catch (error) {
+				return {
+					content: [{
+						type: "text",
+						text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+					}]
+				};
+			}
+		});
 
 		// Calculator tool with multiple operations
 		this.server.tool(
@@ -61,6 +103,9 @@ export class MyMCP extends McpAgent {
 			},
 		);
 
+		
+		
+		
 		// Search tool required by ChatGPT
 		this.server.tool(
 			"search",
