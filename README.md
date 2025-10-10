@@ -13,6 +13,36 @@ Alternatively, you can use the command line below to get the remote MCP Server c
 npm create cloudflare@latest -- my-mcp-server --template=cloudflare/ai/demos/remote-mcp-authless
 ```
 
+## Environment Variables
+
+This project uses environment variables for configuration. 
+
+### Local Development
+
+Create a `.env` file in the root directory:
+
+```env
+API_BASE_URL=https://scarflike-prepositionally-azariah.ngrok-free.dev
+```
+
+The `.env` file will be automatically loaded by Wrangler during local development.
+
+### Production Deployment
+
+For production, update the `vars` section in `wrangler.jsonc`:
+
+```jsonc
+"vars": {
+  "API_BASE_URL": "https://your-production-api-url.com"
+}
+```
+
+Or use Cloudflare secrets for sensitive values:
+
+```bash
+wrangler secret put API_BASE_URL
+```
+
 ## Customizing your MCP Server
 
 To add your own [tools](https://developers.cloudflare.com/agents/model-context-protocol/tools/) to the MCP server, define each tool inside the `init()` method of `src/index.ts` using `this.server.tool(...)`. 

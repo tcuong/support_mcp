@@ -2,10 +2,52 @@ import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
+// Constants
+const API_BASE_URL = process.env.API_BASE_URL;
+
+// Helper functions
+function createSuccessResponse(data: any, customMessage?: string) {
+	const text = customMessage || JSON.stringify(data, null, 2);
+	return {
+		content: [{ type: "text" as const, text }],
+		isError: false
+	};
+}
+
+function createErrorResponse(message: string) {
+	return {
+		content: [{ type: "text" as const, text: message }],
+		isError: true
+	};
+}
+
+async function makeApiCall(
+	endpoint: string,
+	body: Record<string, any>
+) {
+	try {
+		const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body)
+		});
+
+		if (!response.ok) {
+			return createErrorResponse(`Error: HTTP ${response.status} - ${response.statusText}`);
+		}
+
+		const data = await response.json();
+		console.log(data);
+		return createSuccessResponse(data);
+	} catch (error) {
+		return createErrorResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+	}
+}
+
 // Define our MCP agent with tools
 export class MyMCP extends McpAgent {
 	server = new McpServer({
-		name: "Zensho Support",
+		name: "Zensho",
 		version: "1.0.0",
 	});
 
@@ -13,265 +55,155 @@ export class MyMCP extends McpAgent {
 		// Browse tool that calls Zensho API
 		this.server.tool(
 			"browse", 
-			{ url: z.string().describe("The URL to browse") },
+			{ url: z.string().describe("The URL or key to browse. Supports: Jira issue URL/key (e.g., ZEN2025-2651), Backlog URL/key, Teams message URL") },
 			{
-				description: "Browse and fetch content from a URL using the Zensho API. Returns the scraped content and metadata."
+				description: `Browse and fetch content from a URL using the Zensho API. Supports Jira issues, Backlog URLs/keys, and Teams messages.
+
+Response format (200):
+{
+  "content": "Main extracted content",
+  "reference_links": "Extracted reference links within content",
+  "comments": "Comments from related users",
+  "parentContent": "Parent content (for Teams thread starter)"
+}
+
+Error responses:
+- 400: Invalid request (missing/wrong parameters)
+- 500: Server error`
 			},
 			async ({ url }) => {
-			try {
-				const response = await fetch('https://scarflike-prepositionally-azariah.ngrok-free.dev/zensho/browse', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						url: url,
-						oneCommentOnly: false
-					})
-				});
-
-				if (!response.ok) {
-					return {
-						content: [{
-							type: "text",
-							text: `Error: HTTP ${response.status} - ${response.statusText}`
-						}]
-					};
-				}
-
-				const data = await response.json();
-				console.log(data);
-				return {
-					content: [{
-						type: "text",
-						text: JSON.stringify(data, null, 2)
-					}]
-				};
-			} catch (error) {
-				return {
-					content: [{
-						type: "text",
-						text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
-					}]
-				};
+				return makeApiCall('/zensho/browse', { url, oneCommentOnly: false });
 			}
-		});
+		);
 
         //List handling ticket by app type
 		this.server.tool(
 			"listBacklogHandlingTickets",
 			{
-				appType: z.string().describe("The app type to list backlog handling tickets for")
+				appType: z.string().describe("The app type to list backlog handling tickets for. Allowed values: N, KN, SK, ZET")
+			},
+			{
+				description: `List all backlog handling tickets for a specific app type (N, KN, SK, ZET).
+
+Response format (200):
+{
+  "tickets": [
+    {
+      "key": "DEV_N_APP-2993",
+      "title": "Ticket title"
+    }
+  ],
+  "num": 10
+}
+
+Error responses:
+- 400: Bad request (missing or invalid appType)
+- 500: Server error`
 			},
 			async ({ appType }) => {
-				const response = await fetch('https://scarflike-prepositionally-azariah.ngrok-free.dev/zensho/listBacklogHandlingTickets', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						appType: appType
-					})
-				});
-
-				if (!response.ok) {
-					return {
-						content: [{
-							type: "text",
-							text: `Error: HTTP ${response.status} - ${response.statusText}`
-						}]
-					};
-				}
-
-				const data = await response.json();
-				console.log(data);
-				return {
-					content: [{
-						type: "text",
-						text: JSON.stringify(data, null, 2)
-					}]
-				};
+				return makeApiCall('/zensho/listBacklogHandlingTickets', { appType });
 			}
 		);
 
-		//reply backlog ticket, forward to this curl: 
-		//		curl --location 'https://scarflike-prepositionally-azariah.ngrok-free.dev/api/backlog/replyIssue' \
-//--header 'Content-Type: application/json' \
-//--data-raw '{"url":"https://zhdoa.backlog.jp/view/DEV_005_SPO-7073","content":""}'
+		//reply backlog ticket
 		this.server.tool(
 			"replyBacklogTicket",
 			{
-				url: z.string().describe("The backlog ticket ID to reply to"),
-				reply: z.string().describe("The reply to the backlog ticket"),
+				url: z.string().describe("The backlog ticket URL or key to reply to (e.g., DEV_005_SPO-7012)"),
+				content: z.string().describe("The content of the comment to post"),
 			},
-			async ({ url, reply }) => {
-				const response = await fetch('https://scarflike-prepositionally-azariah.ngrok-free.dev/api/backlog/replyIssue', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						url: url,
-						content: reply
-					})
-				});
+			{
+				description: `Reply to an existing backlog ticket with a comment. Requires the ticket URL/key and content.
 
-				if (!response.ok) {
-					return {
-						content: [{
-							type: "text",
-							text: `Error: HTTP ${response.status} - ${response.statusText}`
-						}]
-					};
-				}
+Response format (200):
+{
+  "message": "Comment posted successfully",
+  "commentUrl": "URL of the comment after posting"
+}
 
-				const data = await response.json();
-				console.log(data);
-				return {
-					content: [{
-						type: "text",
-						text: JSON.stringify(data, null, 2)
-					}]
-				};
+Error responses:
+- 400: Invalid request (missing or wrong parameters)
+- 500: Server error`
+			},
+			async ({ url, content }) => {
+				return makeApiCall('/api/backlog/replyIssue', { url, content });
 			}
 		);
 
-		//create backlog ticket, forward to this curl: //curl --location 'https://scarflike-prepositionally-azariah.ngrok-free.dev/api/backlog/createIssue' \
-//--header 'Content-Type: application/json' \
-//--data '{
-//    "title": "AAAA", 
-//    "description": " ", 
-//    "appType": "SK"
-//}'
+		//create backlog ticket
 		this.server.tool(
 			"createBacklogTicket",
 			{
-				title: z.string().describe("The title of the backlog ticket"),
-				description: z.string().describe("The description of the backlog ticket"),
-				appType: z.string().describe("The app type of the backlog ticket"),
+				title: z.string().describe("The title of the backlog issue"),
+				description: z.string().describe("The detailed description of the backlog issue"),
+				appType: z.string().describe("The app type for the backlog issue. Allowed values: N, KN, SK, ZET"),
+			},
+			{
+				description: `Create a new backlog ticket with a title, description, and app type (N, KN, SK, ZET).
+
+Response format (200):
+{
+  "issueKey": "DEV_N_APP-2967",
+  "message": "Additional status message (optional)"
+}
+
+Error responses:
+- 400: Invalid request (missing or wrong parameters)
+- 500: Server error`
 			},
 			async ({ title, description, appType }) => {
-				const response = await fetch('https://scarflike-prepositionally-azariah.ngrok-free.dev/api/backlog/createIssue', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						title: title,
-						description: description,
-						appType: appType
-					})
-				});
-
-				if (!response.ok) {
-					return {
-						content: [{
-							type: "text",
-							text: `Error: HTTP ${response.status} - ${response.statusText}`
-						}]
-					};
-				}
-
-				const data = await response.json();
-				console.log(data);
-				return {
-					content: [{
-						type: "text",
-						text: JSON.stringify(data, null, 2)
-					}]
-				};
+				return makeApiCall('/api/backlog/createIssue', { title, description, appType });
 			}
 		);
 
-		//create jira ticket, forward to this curl: curl --location 'https://scarflike-prepositionally-azariah.ngrok-free.dev/zensho/createJiraIssue' \
-// --header 'Content-Type: application/json' \
-// --data '{
-//     "title": "AAAAA",
-//     "description": "BBBBB",
-//     "type": "KN"
-// }'
+		//create jira ticket
 		this.server.tool(
 			"createJiraTicket",
 			{
-				title: z.string().describe("The title of the jira ticket"),
-				description: z.string().describe("The description of the jira ticket"),
-				type: z.string().describe("The type of the jira ticket"),
+				title: z.string().describe("The title of the Jira issue"),
+				description: z.string().describe("The detailed description of the Jira issue"),
+				type: z.string().describe("The app type for the Jira issue. Allowed values: N, KN, SK, ZET"),
+			},
+			{
+				description: `Create a new Jira ticket with a title, description, and type (N, KN, SK, ZET).
+
+Response format (200):
+{
+  "message": "Success message",
+  "issueUrl": "https://pm.gem-corp.tech/browse/ZEN2025-XXXX"
+}
+
+Error responses:
+- 400: Invalid request
+- 500: Server error`
 			},
 			async ({ title, description, type }) => {
-				const response = await fetch('https://scarflike-prepositionally-azariah.ngrok-free.dev/zensho/createJiraIssue', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						title: title,
-						description: description,
-						type: type
-					})
-				});
-
-				if (!response.ok) {
-					return {
-						content: [{
-							type: "text",
-							text: `Error: HTTP ${response.status} - ${response.statusText}`
-						}]
-					};
-				}
-
-				const data = await response.json();
-				console.log(data);
-				return {
-					content: [{
-						type: "text",
-						text: JSON.stringify(data, null, 2)
-					}]
-				};
+				return makeApiCall('/zensho/createJiraIssue', { title, description, type });
 			}
 		);
 
-		//reply ticket jira follow this curl:
-// 		curl --location 'https://scarflike-prepositionally-azariah.ngrok-free.dev/zensho/replyJiraIssue' \
-// --header 'Content-Type: application/json' \
-// --data '{
-//     "url": "https://pm.gem-corp.tech/browse/ZEN2025-1197",
-//     "content": "AAAAA"
-// }'   
+		//reply ticket jira 
 		this.server.tool(
 			"replyJiraTicket",
 			{
-				url: z.string().describe("The url of the jira ticket to reply to"),
-				content: z.string().describe("The content of the reply to the jira ticket"),
+				url: z.string().describe("The Jira ticket URL or key to reply to (e.g., https://pm.gem-corp.tech/browse/ZEN2025-1197 or ZEN2025-1197)"),
+				content: z.string().describe("The content of the comment to post"),
+			},
+			{
+				description: `Reply to an existing Jira ticket with a comment. Requires the ticket URL/key and reply content.
+
+Response format (200):
+{
+  "message": "Comment posted successfully",
+  "commentUrl": "URL of the comment after posting"
+}
+
+Error responses:
+- 400: Invalid request (missing or wrong parameters)
+- 500: Server error`
 			},
 			async ({ url, content }) => {
-				const response = await fetch('https://scarflike-prepositionally-azariah.ngrok-free.dev/zensho/replyJiraIssue', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						url: url,
-						content: content
-					})
-				});
-
-				if (!response.ok) {
-					return {
-						content: [{
-							type: "text",
-							text: `Error: HTTP ${response.status} - ${response.statusText}`
-						}]
-					};
-				}
-
-				const data = await response.json();
-				console.log(data);
-				return {
-					content: [{
-						type: "text",
-						text: JSON.stringify(data, null, 2)
-					}]
-				};
+				return makeApiCall('/zensho/replyJiraIssue', { url, content });
 			}
 		);
 		
@@ -279,35 +211,40 @@ export class MyMCP extends McpAgent {
 		this.server.tool(
 			"search",
 			{
-				query: z.string().describe("The search query to find information"),
+				query: z.string().describe("The search query to find documents/issues (e.g., version number, keywords)"),
+			},
+			{
+				description: `Search for documents and issues using a text query.
+
+Response format (200):
+[
+  {
+    "id": "DEV_ZET_APP-266",
+    "title": "Document or issue title",
+    "url": "https://zhdoa.backlog.jp/view/DEV_ZET_APP-266"
+  }
+]
+
+Error responses:
+- 400: Invalid request (missing or wrong parameters)
+- 500: Server error`
 			},
 			async ({ query }) => {
-				// This is a basic implementation - you can enhance it to search actual data sources
+				// Mock implementation - replace with actual API call when ready
 				const mockResults = [
 					{
 						title: `Search results for: ${query}`,
-						content: `This is a mock search result for the query "${query}". In a real implementation, this would search through your actual data sources like databases, APIs, or file systems.`,
+						content: `This is a mock search result for the query "${query}".`,
 						url: "#",
 					},
 					{
 						title: "Additional search result",
-						content: `Another mock result for "${query}". You can implement actual search functionality here based on your needs.`,
+						content: `Another mock result for "${query}".`,
 						url: "#",
 					},
 				];
 
-				return {
-					content: [
-						{
-							type: "text",
-							text: JSON.stringify({
-								query,
-								results: mockResults,
-								total: mockResults.length,
-							}, null, 2),
-						},
-					],
-				};
+				return createSuccessResponse({ query, results: mockResults, total: mockResults.length });
 			},
 		);
 
@@ -318,9 +255,16 @@ export class MyMCP extends McpAgent {
 				//need id parameter
 				id: z.string().describe("The ID to fetch")
 			},
+			{
+				description: `Fetch information by ID.
+
+Response format:
+- Success: Returns the data object associated with the provided ID
+- Error: Returns error message`
+			},
 			async ({ id }) => {
-				//implement fetch tool
-				return { content: [{ type: "text", text: JSON.stringify(id) }] };
+				// Mock implementation - implement actual fetch logic when ready
+				return createSuccessResponse(id);
 			}
 		);
 	}
