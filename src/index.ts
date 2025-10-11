@@ -3,7 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 // Constants
-const API_BASE_URL = process.env.API_BASE_URL;
+const API_BASE_URL = "https://scarflike-prepositionally-azariah.ngrok-free.dev";
 
 // Helper functions
 function createSuccessResponse(data: any, customMessage?: string) {
@@ -55,7 +55,10 @@ export class MyMCP extends McpAgent {
 		// Browse tool that calls Zensho API
 		this.server.tool(
 			"browse", 
-			{ url: z.string().describe("The URL or key to browse. Supports: Jira issue URL/key (e.g., ZEN2025-2651), Backlog URL/key, Teams message URL") },
+			{ 
+				url: z.string().describe("The URL or key to browse. Supports: Jira issue URL/key (e.g., ZEN2025-2651), Backlog URL/key, Teams message URL"),
+				oneCommentOnly: z.boolean().optional().describe("If response data is too large (ResponseTooLargeError), set to true to fetch less data. Default: false")
+			},
 			{
 				description: `Browse and fetch content from a URL using the Zensho API. Supports Jira issues, Backlog URLs/keys, and Teams messages.
 
@@ -71,8 +74,8 @@ Error responses:
 - 400: Invalid request (missing/wrong parameters)
 - 500: Server error`
 			},
-			async ({ url }) => {
-				return makeApiCall('/zensho/browse', { url, oneCommentOnly: false });
+			async ({ url, oneCommentOnly }) => {
+				return makeApiCall('/zensho/browse', { url, oneCommentOnly: oneCommentOnly ?? false });
 			}
 		);
 
@@ -111,6 +114,7 @@ Error responses:
 			{
 				url: z.string().describe("The backlog ticket URL or key to reply to (e.g., DEV_005_SPO-7012)"),
 				content: z.string().describe("The content of the comment to post"),
+				imageUrl: z.string().optional().describe("Screenshot image URL to attach to the comment"),
 			},
 			{
 				description: `Reply to an existing backlog ticket with a comment. Requires the ticket URL/key and content.
@@ -125,8 +129,10 @@ Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`
 			},
-			async ({ url, content }) => {
-				return makeApiCall('/api/backlog/replyIssue', { url, content });
+			async ({ url, content, imageUrl }) => {
+				const body: any = { url, content };
+				if (imageUrl) body.imageUrl = imageUrl;
+				return makeApiCall('/api/backlog/replyIssue', body);
 			}
 		);
 
@@ -188,6 +194,7 @@ Error responses:
 			{
 				url: z.string().describe("The Jira ticket URL or key to reply to (e.g., https://pm.gem-corp.tech/browse/ZEN2025-1197 or ZEN2025-1197)"),
 				content: z.string().describe("The content of the comment to post"),
+				imageUrl: z.string().optional().describe("Screenshot image URL to attach to the comment"),
 			},
 			{
 				description: `Reply to an existing Jira ticket with a comment. Requires the ticket URL/key and reply content.
@@ -202,8 +209,10 @@ Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`
 			},
-			async ({ url, content }) => {
-				return makeApiCall('/zensho/replyJiraIssue', { url, content });
+			async ({ url, content, imageUrl }) => {
+				const body: any = { url, content };
+				if (imageUrl) body.imageUrl = imageUrl;
+				return makeApiCall('/zensho/replyJiraIssue', body);
 			}
 		);
 		
@@ -230,41 +239,29 @@ Error responses:
 - 500: Server error`
 			},
 			async ({ query }) => {
-				// Mock implementation - replace with actual API call when ready
-				const mockResults = [
-					{
-						title: `Search results for: ${query}`,
-						content: `This is a mock search result for the query "${query}".`,
-						url: "#",
-					},
-					{
-						title: "Additional search result",
-						content: `Another mock result for "${query}".`,
-						url: "#",
-					},
-				];
-
-				return createSuccessResponse({ query, results: mockResults, total: mockResults.length });
+				return makeApiCall('/api/documents/searchShort', { text: query });
 			},
 		);
 
-		//implemnent fetch tool required by chatgpt
+		// Take screenshot of current selenium web page
 		this.server.tool(
-			"fetch",
+			"getScreenShot",
+			{},
 			{
-				//need id parameter
-				id: z.string().describe("The ID to fetch")
-			},
-			{
-				description: `Fetch information by ID.
+				description: `Take a screenshot of the current web page opened by Selenium and return the image URL.
 
-Response format:
-- Success: Returns the data object associated with the provided ID
-- Error: Returns error message`
+Response format (200):
+{
+  "message": "Screenshot taken",
+  "imageUrl": "https://res.cloudinary.com/.../screenshot.png"
+}
+
+Error responses:
+- 400: Bad request
+- 500: Server error`
 			},
-			async ({ id }) => {
-				// Mock implementation - implement actual fetch logic when ready
-				return createSuccessResponse(id);
+			async () => {
+				return makeApiCall('/manage/getScreenShot', {});
 			}
 		);
 	}
