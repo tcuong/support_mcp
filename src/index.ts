@@ -83,10 +83,12 @@ Error responses:
 		this.server.tool(
 			"listBacklogHandlingTickets",
 			{
-				appType: z.string().describe("The app type to list backlog handling tickets for. Allowed values: N, KN, SK, ZET")
+				appType: z.string()
+					.transform(val => val.toUpperCase())
+					.describe("The app type to list backlog handling tickets for. Allowed values: N, KN, SK, ZET, DMINI (case-insensitive)")
 			},
 			{
-				description: `List all backlog handling tickets for a specific app type (N, KN, SK, ZET).
+				description: `List all backlog handling tickets for a specific app type (N, KN, SK, ZET, DMINI). Case-insensitive.
 
 Response format (200):
 {
@@ -114,7 +116,6 @@ Error responses:
 			{
 				url: z.string().describe("The backlog ticket URL or key to reply to (e.g., DEV_005_SPO-7012)"),
 				content: z.string().describe("The content of the comment to post"),
-				imageUrl: z.string().optional().describe("Screenshot image URL to attach to the comment"),
 			},
 			{
 				description: `Reply to an existing backlog ticket with a comment. Requires the ticket URL/key and content.
@@ -122,16 +123,16 @@ Error responses:
 Response format (200):
 {
   "message": "Comment posted successfully",
-  "commentUrl": "URL of the comment after posting"
+  "commentUrl": "URL of the comment after posting",
+  "imageUrl": "URL of the Screenshot image of the screen after commenting",
 }
 
 Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`
 			},
-			async ({ url, content, imageUrl }) => {
+			async ({ url, content }) => {
 				const body: any = { url, content };
-				if (imageUrl) body.imageUrl = imageUrl;
 				return makeApiCall('/api/backlog/replyIssue', body);
 			}
 		);
@@ -142,10 +143,12 @@ Error responses:
 			{
 				title: z.string().describe("The title of the backlog issue"),
 				description: z.string().describe("The detailed description of the backlog issue"),
-				appType: z.string().describe("The app type for the backlog issue. Allowed values: N, KN, SK, ZET"),
+				appType: z.string()
+					.transform(val => val.toUpperCase())
+					.describe("The app type for the backlog issue. Allowed values: N, KN, SK, ZET, DMINI (case-insensitive)"),
 			},
 			{
-				description: `Create a new backlog ticket with a title, description, and app type (N, KN, SK, ZET).
+				description: `Create a new backlog ticket with a title, description, and app type (N, KN, SK, ZET, DMINI). Case-insensitive.
 
 Response format (200):
 {
@@ -168,10 +171,12 @@ Error responses:
 			{
 				title: z.string().describe("The title of the Jira issue"),
 				description: z.string().describe("The detailed description of the Jira issue"),
-				type: z.string().describe("The app type for the Jira issue. Allowed values: N, KN, SK, ZET"),
+				type: z.string()
+					.transform(val => val.toUpperCase())
+					.describe("The app type for the Jira issue. Allowed values: N, KN, SK, ZET, DMINI (case-insensitive)"),
 			},
 			{
-				description: `Create a new Jira ticket with a title, description, and type (N, KN, SK, ZET).
+				description: `Create a new Jira ticket with a title, description, and type (N, KN, SK, ZET, DMINI). Case-insensitive.
 
 Response format (200):
 {
