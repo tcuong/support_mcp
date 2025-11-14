@@ -79,11 +79,11 @@ Error responses:
 			}
 		);
 
-        //List handling ticket by app type
+		// List handling ticket by app type
 		this.server.tool(
 			"listBacklogHandlingTickets",
 			{
-				appType: z.string().describe("The app type to list backlog handling tickets for. Allowed values: N, KN, SK, ZET")
+				appNo: z.string().describe("The app type to list backlog handling tickets for. Allowed values: N, KN, SK, ZET")
 			},
 			{
 				description: `List all backlog handling tickets for a specific app type (N, KN, SK, ZET).
@@ -100,15 +100,15 @@ Response format (200):
 }
 
 Error responses:
-- 400: Bad request (missing or invalid appType)
+- 400: Bad request (missing or invalid appNo)
 - 500: Server error`
 			},
-			async ({ appType }) => {
-				return makeApiCall('/zensho/listBacklogHandlingTickets', { appType });
+			async ({ appNo }) => {
+				return makeApiCall('/api/backlog/listHandlingTickets', { appNo });
 			}
 		);
 
-		//reply backlog ticket
+		// Reply backlog ticket
 		this.server.tool(
 			"replyBacklogTicket",
 			{
@@ -136,33 +136,36 @@ Error responses:
 			}
 		);
 
-		//create backlog ticket
+		// Create backlog ticket
 		this.server.tool(
 			"createBacklogTicket",
 			{
 				title: z.string().describe("The title of the backlog issue"),
 				description: z.string().describe("The detailed description of the backlog issue"),
-				appType: z.string().describe("The app type for the backlog issue. Allowed values: N, KN, SK, ZET"),
+				appNo: z.string().describe("The app type for the backlog issue. Allowed values: N, KN, SK, ZET"),
 			},
 			{
 				description: `Create a new backlog ticket with a title, description, and app type (N, KN, SK, ZET).
 
 Response format (200):
 {
-  "issueKey": "DEV_N_APP-2967",
-  "message": "Additional status message (optional)"
+  "id": "DEV_KN-123",
+  "url": "https://zhdoa.backlog.jp/view/DEV_KN-123",
+  "title": "Issue title",
+  "description": "Issue description",
+  "appNo": "KN"
 }
 
 Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`
 			},
-			async ({ title, description, appType }) => {
-				return makeApiCall('/api/backlog/createIssue', { title, description, appType });
+			async ({ title, description, appNo }) => {
+				return makeApiCall('/api/backlog/createIssue', { title, description, appNo });
 			}
 		);
 
-		//create jira ticket
+		// Create Jira ticket
 		this.server.tool(
 			"createJiraTicket",
 			{
@@ -175,8 +178,8 @@ Error responses:
 
 Response format (200):
 {
-  "message": "Success message",
-  "issueUrl": "https://pm.gem-corp.tech/browse/ZEN2025-XXXX"
+  "message": "Issue created successfully",
+  "issueUrl": "https://pm.gem-corp.tech/browse/ZEN2025-1234"
 }
 
 Error responses:
@@ -184,11 +187,11 @@ Error responses:
 - 500: Server error`
 			},
 			async ({ title, description, type }) => {
-				return makeApiCall('/zensho/createJiraIssue', { title, description, type });
+				return makeApiCall('/api/jira/createIssue', { title, description, type });
 			}
 		);
 
-		//reply ticket jira 
+		// Reply Jira ticket
 		this.server.tool(
 			"replyJiraTicket",
 			{
@@ -202,7 +205,8 @@ Error responses:
 Response format (200):
 {
   "message": "Comment posted successfully",
-  "commentUrl": "URL of the comment after posting"
+  "url": "https://pm.gem-corp.tech/browse/ZEN2025-1197",
+  "content": "Reply content"
 }
 
 Error responses:
@@ -212,7 +216,7 @@ Error responses:
 			async ({ url, content, imageUrl }) => {
 				const body: any = { url, content };
 				if (imageUrl) body.imageUrl = imageUrl;
-				return makeApiCall('/zensho/replyJiraIssue', body);
+				return makeApiCall('/api/jira/replyIssue', body);
 			}
 		);
 		
@@ -241,6 +245,254 @@ Error responses:
 			async ({ query }) => {
 				return makeApiCall('/api/documents/searchShort', { text: query });
 			},
+		);
+
+		// Read first unread notification from Backlog
+		this.server.tool(
+			"readFirstUnreadNotification",
+			{},
+			{
+				description: `Read the first unread notification from Backlog. Automatically opens Backlog, logs in, clicks the first unread notification and extracts issue information.
+
+Response format (200):
+{
+  "title": "Issue title",
+  "content": "Main extracted content",
+  "reference_links": "Extracted reference links",
+  "comments": "Comments content",
+  "parentContent": "Parent content if available",
+  "issueKey": "DEV_ZET_APP-266"
+}
+
+Error responses:
+- 500: Server error`
+			},
+			async () => {
+				return makeApiCall('/api/backlog/readFirstUnreadNotification', {});
+			}
+		);
+
+		// Read all notifications from Backlog
+		this.server.tool(
+			"readAllNotifications",
+			{},
+			{
+				description: `Read all notifications from Backlog. Automatically opens Backlog, logs in, opens notification list and extracts content of all notifications.
+
+Response format (200):
+{
+  "notifications": [
+    {
+      "content": "Notification content",
+      "issueKey": "DEV_ZET_APP-266"
+    }
+  ]
+}
+
+Error responses:
+- 500: Server error`
+			},
+			async () => {
+				return makeApiCall('/api/backlog/readAllNotifications', {});
+			}
+		);
+
+		// Reply in Teams
+		this.server.tool(
+			"replyInTeams",
+			{
+				text: z.string().describe("The content of the message to reply in Teams"),
+				url: z.string().optional().describe("URL of the Teams message thread to reply to (required if mentionNo is not provided)"),
+				mentionNo: z.string().optional().describe("Mention number of the Teams message in mention list (required if url is not provided)")
+			},
+			{
+				description: `Reply to a message in Microsoft Teams thread. Requires either url or mentionNo (at least one).
+
+Response format (200):
+{
+  "message": "Reply sent successfully",
+  "url": "https://teams.microsoft.com/l/message/...",
+  "text": "Reply content"
+}
+
+Error responses:
+- 400: Invalid request (missing or wrong parameters)
+- 500: Server error`
+			},
+			async ({ text, url, mentionNo }) => {
+				const body: any = { text };
+				if (url) body.url = url;
+				if (mentionNo) body.mentionNo = mentionNo;
+				return makeApiCall('/api/teams/replyInTeams', body);
+			}
+		);
+
+		// Read mentions from Teams
+		this.server.tool(
+			"readMentions",
+			{},
+			{
+				description: `Read all mentions from Microsoft Teams Activity tab.
+
+Response format (200):
+Can return either:
+1. Single mention detail:
+{
+  "title": "Teams Chat Title",
+  "content": "Aggregated content of all messages",
+  "message": [
+    {
+      "id": "123456",
+      "author": "Nguyễn Văn A",
+      "timestamp": "10:30 AM",
+      "content": "Message content",
+      "images": []
+    }
+  ],
+  "channelName": "General"
+}
+
+2. All mentions array:
+[
+  {
+    "id": "activity-feed-item-1",
+    "author": null,
+    "timestamp": null,
+    "content": "Notification content",
+    "images": null
+  }
+]
+
+Error responses:
+- 400: Invalid request
+- 500: Server error`
+			},
+			async () => {
+				return makeApiCall('/api/teams/readMentions', {});
+			}
+		);
+
+		// Read message by mention number
+		this.server.tool(
+			"readMessageByMentionNo",
+			{
+				mentionNo: z.number().min(1).describe("The mention number to read (1: first mention, 2: second mention, etc.)")
+			},
+			{
+				description: `Read a specific mention by its number from Microsoft Teams Activity tab. Opens Activity tab, selects mention by mentionNo and returns detailed content.
+
+Response format (200):
+{
+  "content": "Main extracted content",
+  "reference_links": "Extracted reference links",
+  "comments": "Comments content",
+  "parentContent": "Parent content if available"
+}
+
+Error responses:
+- 400: Invalid request (missing or wrong mentionNo)
+- 500: Server error`
+			},
+			async ({ mentionNo }) => {
+				return makeApiCall('/api/teams/readMessageByMentionNo', { mentionNo });
+			}
+		);
+
+		// Read threads from Teams channel
+		this.server.tool(
+			"readThreads",
+			{
+				channelName: z.string().describe("The Teams channel name to read threads from. Allowed values: KN, SK, ZET, N, DMINI, GENERAL")
+			},
+			{
+				description: `Read list of threads from a Microsoft Teams channel. Automatically scrolls up to load at least 10 threads if initially fewer than 10.
+
+Response format (200):
+[
+  {
+    "threadId": "123456",
+    "author": "Nguyễn Văn A",
+    "timestamp": "10:30 AM",
+    "subject": "Thread subject",
+    "content": "Thread content",
+    "latest_replyies": [
+      {
+        "replyId": "789012",
+        "replyAuthor": "Nguyễn Văn B",
+        "replyTimestamp": "10:35 AM",
+        "replyContent": "Reply content"
+      }
+    ]
+  }
+]
+
+Error responses:
+- 400: Invalid request (missing or wrong parameters)
+- 500: Server error`
+			},
+			async ({ channelName }) => {
+				return makeApiCall('/api/teams/readThreads', { channelName });
+			}
+		);
+
+		// Create thread in Teams channel
+		this.server.tool(
+			"createThread",
+			{
+				title: z.string().describe("The title of the thread/post"),
+				content: z.string().describe("The content of the thread/post"),
+				channelName: z.string().describe("The Teams channel name to create thread in. Allowed values: KN, SK, ZET, N, DMINI, GENERAL")
+			},
+			{
+				description: `Create a new thread/post in a Microsoft Teams channel with specified title and content.
+
+Response format (200):
+{
+  "message": "Successfully created post in Teams channel",
+  "title": "Thread title",
+  "content": "Thread content"
+}
+
+Error responses:
+- 400: Invalid request (missing or wrong parameters)
+- 500: Server error`
+			},
+			async ({ title, content, channelName }) => {
+				return makeApiCall('/api/teams/createThread', { title, content, channelName });
+			}
+		);
+
+		// List Jira handling tickets by app type
+		this.server.tool(
+			"listJiraHandlingTickets",
+			{
+				url: z.string().describe("Jira project versions page URL (e.g., https://pm.gem-corp.tech/projects/ZEN2025/versions)"),
+				appNo: z.string().describe("App type to filter versions by (e.g., ZET, KN, SK, Mini)")
+			},
+			{
+				description: `List all Jira handling tickets by extracting issues from versions matching the specified app type. Navigates to Jira project versions page and extracts all issues from matching versions.
+
+Response format (200):
+{
+  "success": true,
+  "issues": [
+    {
+      "ticketName": "ZEN2025-123",
+      "ticketStatus": "Done",
+      "ticketUrl": "https://pm.gem-corp.tech/browse/ZEN2025-123",
+      "versionName": "ZET_next_version",
+      "key": "ZEN2025-123"
+    }
+  ]
+}
+
+Error responses:
+- 400: Invalid request (missing url or appNo)
+- 500: Server error`
+			},
+			async ({ url, appNo }) => {
+				return makeApiCall('/api/jira/listHandlingTickets', { url, appNo });
+			}
 		);
 
 		// Take screenshot of current selenium web page

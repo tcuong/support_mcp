@@ -5,6 +5,7 @@
 	"scripts": {
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
+		"dev:prod": "wrangler dev --env production --local",
 		"format": "biome format --write",
 		"lint:fix": "biome lint --fix",
 		"start": "wrangler dev",
@@ -20,6 +21,6 @@
 		"@biomejs/biome": "^2.2.4",
 		"@types/node": "^18.19.129",
 		"typescript": "5.9.2",
-		"wrangler": "^4.40.3"
+		"wrangler": "^4.42.2"
 	}
 }
