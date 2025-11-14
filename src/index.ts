@@ -83,7 +83,9 @@ Error responses:
 		this.server.tool(
 			"listBacklogHandlingTickets",
 			{
-				appNo: z.string().describe("The app type to list backlog handling tickets for. Allowed values: N, KN, SK, ZET")
+				appNo: z.string()
+					.transform(val => val.toUpperCase())
+					.describe("The app type to list backlog handling tickets for. Allowed values: N, KN, SK, ZET, DMINI (case-insensitive)")
 			},
 			{
 				description: `List all backlog handling tickets for a specific app type (N, KN, SK, ZET, DMINI). Case-insensitive.
@@ -141,7 +143,9 @@ Error responses:
 			{
 				title: z.string().describe("The title of the backlog issue"),
 				description: z.string().describe("The detailed description of the backlog issue"),
-				appNo: z.string().describe("The app type for the backlog issue. Allowed values: N, KN, SK, ZET"),
+				appNo: z.string()
+					.transform(val => val.toUpperCase())
+					.describe("The app type for the backlog issue. Allowed values: N, KN, SK, ZET, DMINI (case-insensitive)"),
 			},
 			{
 				description: `Create a new backlog ticket with a title, description, and app type (N, KN, SK, ZET, DMINI). Case-insensitive.
@@ -207,7 +211,9 @@ Response format (200):
 {
   "message": "Comment posted successfully",
   "url": "https://pm.gem-corp.tech/browse/ZEN2025-1197",
-  "content": "Reply content"
+  "content": "Reply content",
+  "commentUrl": "URL of the comment after posting",
+  "imageUrl": "URL of the screenshot image of the screen after commenting"
 }
 
 Error responses:
@@ -336,24 +342,7 @@ Error responses:
 				description: `Read all mentions from Microsoft Teams Activity tab.
 
 Response format (200):
-Can return either:
-1. Single mention detail:
-{
-  "title": "Teams Chat Title",
-  "content": "Aggregated content of all messages",
-  "message": [
-    {
-      "id": "123456",
-      "author": "Nguyễn Văn A",
-      "timestamp": "10:30 AM",
-      "content": "Message content",
-      "images": []
-    }
-  ],
-  "channelName": "General"
-}
-
-2. All mentions array:
+All mentions array (ReadAllMentionsResponse):
 [
   {
     "id": "activity-feed-item-1",
