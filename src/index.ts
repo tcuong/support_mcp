@@ -401,7 +401,7 @@ Error responses:
 Response format (200):
 [
   {
-    "threadId": "123456",
+    "parentMessageId": "123456",
     "author": "Nguyễn Văn A",
     "timestamp": "10:30 AM",
     "subject": "Thread subject",
