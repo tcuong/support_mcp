@@ -465,6 +465,37 @@ Error responses:
 			}
 		);
 
+		// Find Teams thread URL from ticket key
+		this.server.tool(
+			"findThread",
+			{
+				ticketKey: z.string().describe("Ticket key or URL (e.g., ZEN2025-1234, DEV_005_SPO-7012, or full URL of Jira/Backlog issue)")
+			},
+			{
+				description: `Find Teams thread URL from ticket key. Searches for Teams thread URL in Google Sheets based on ticket key (Jira or Backlog key). Can accept full URL or just ticket key.
+
+Response format (200):
+If found:
+{
+  "message": "Thread Url found",
+  "teamsUrl": "https://teams.microsoft.com/l/message/..."
+}
+
+If not found:
+{
+  "message": "Thread Url not found",
+  "teamsUrl": null
+}
+
+Error responses:
+- 400: Invalid request (missing or wrong parameters)
+- 500: Server error`
+			},
+			async ({ ticketKey }) => {
+				return makeApiCall('/api/teams/findThread', { ticketKey });
+			}
+		);
+
 		// List Jira handling tickets by app type
 		this.server.tool(
 			"listJiraHandlingTickets",
