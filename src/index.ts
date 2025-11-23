@@ -64,10 +64,12 @@ export class MyMCP extends McpAgent {
 
 Response format (200):
 {
+  "title": "Title of the issue/ticket or message",
   "content": "Main extracted content",
   "reference_links": "Extracted reference links within content",
   "comments": "Comments from related users",
-  "parentContent": "Parent content (for Teams thread starter)"
+  "parentContent": "Parent content (for Teams thread starter)",
+  "teamsUrl": "URL of Teams message if available (only when type is teams or when issue has link to Teams)"
 }
 
 Error responses:
@@ -116,6 +118,7 @@ Error responses:
 			{
 				url: z.string().describe("The backlog ticket URL or key to reply to (e.g., DEV_005_SPO-7012)"),
 				content: z.string().describe("The content of the comment to post"),
+				shouldAssign: z.boolean().describe("Whether to assign the issue to the first person mentioned in the comment"),
 			},
 			{
 				description: `Reply to an existing backlog ticket with a comment. Requires the ticket URL/key and content.
@@ -124,16 +127,15 @@ Response format (200):
 {
   "message": "Comment posted successfully",
   "commentUrl": "URL of the comment after posting",
-  "imageUrl": "URL of the Screenshot image of the screen after commenting",
+  "imageUrl": "URL of the screenshot image of the screen after commenting"
 }
 
 Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`
 			},
-			async ({ url, content }) => {
-				const body: any = { url, content };
-				return makeApiCall('/api/backlog/replyIssue', body);
+			async ({ url, content, shouldAssign }) => {
+				return makeApiCall('/api/backlog/replyIssue', { url, content, shouldAssign });
 			}
 		);
 
@@ -342,14 +344,22 @@ Error responses:
 				description: `Read all mentions from Microsoft Teams Activity tab.
 
 Response format (200):
-All mentions array (ReadAllMentionsResponse):
+Array of all mentions (ReadAllMentionsResponse):
 [
   {
-	"mentionNo": 1, // Mention number
+    "mentionNo": 1,
     "id": "activity-feed-item-1",
     "author": null,
     "timestamp": null,
-    "content": "Notification content",
+    "content": "Thông báo về việc release",
+    "images": null
+  },
+  {
+    "mentionNo": 2,
+    "id": "activity-feed-item-2",
+    "author": null,
+    "timestamp": null,
+    "content": "Thông báo về việc sửa lỗi",
     "images": null
   }
 ]
@@ -374,10 +384,12 @@ Error responses:
 
 Response format (200):
 {
-  "content": "Main extracted content",
-  "reference_links": "Extracted reference links",
-  "comments": "Comments content",
-  "parentContent": "Parent content if available"
+  "title": "Tiêu đề message",
+  "content": "Nội dung message được trích xuất...",
+  "reference_links": "Các liên kết tham chiếu...",
+  "comments": "Nội dung comments...",
+  "parentContent": "Nội dung cha (message bắt đầu thread)...",
+  "teamsUrl": "https://teams.microsoft.com/l/message/..."
 }
 
 Error responses:
@@ -401,7 +413,7 @@ Error responses:
 Response format (200):
 [
   {
-    "parentMessageId": "123456",
+    "threadId": "123456",
     "author": "Nguyễn Văn A",
     "timestamp": "10:30 AM",
     "subject": "Thread subject",

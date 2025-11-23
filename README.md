@@ -80,6 +80,9 @@ Update with this configuration:
 Restart Claude and you should see the tools become available. 
 
 ====
+Login:
+npx wrangler login
+
 
 Deploy:
 npm run deploy
