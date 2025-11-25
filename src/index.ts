@@ -77,7 +77,7 @@ Error responses:
 - 500: Server error`
 			},
 			async ({ url, oneCommentOnly }) => {
-				return makeApiCall('/zensho/browse', { url, oneCommentOnly: oneCommentOnly ?? false });
+				return makeApiCall('/api/common/browse', { url, oneCommentOnly: oneCommentOnly ?? false });
 			}
 		);
 
