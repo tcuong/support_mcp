@@ -119,23 +119,26 @@ Error responses:
 				url: z.string().describe("The backlog ticket URL or key to reply to (e.g., DEV_005_SPO-7012)"),
 				content: z.string().describe("The content of the comment to post"),
 				shouldAssign: z.boolean().describe("Whether to assign the issue to the first person mentioned in the comment"),
+				assetsImageIds: z.array(z.string()).optional().describe("Optional list of uploaded image IDs to attach to the reply"),
 			},
 			{
 				description: `Reply to an existing backlog ticket with a comment. Requires the ticket URL/key and content.
 
-Response format (200):
-{
-  "message": "Comment posted successfully",
-  "commentUrl": "URL of the comment after posting",
-  "imageUrl": "URL of the screenshot image of the screen after commenting"
-}
+	Response format (200):
+	{
+	  "message": "Comment posted successfully",
+	  "commentUrl": "URL of the comment after posting",
+	  "imageUrl": "URL of the screenshot image of the screen after commenting"
+	}
 
 Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`
 			},
-			async ({ url, content, shouldAssign }) => {
-				return makeApiCall('/api/backlog/replyIssue', { url, content, shouldAssign });
+			async ({ url, content, shouldAssign, assetsImageIds }) => {
+				const body: Record<string, unknown> = { url, content, shouldAssign };
+				if (assetsImageIds) body.assetsImageIds = assetsImageIds;
+				return makeApiCall('/api/backlog/replyIssue', body);
 			}
 		);
 
@@ -148,25 +151,28 @@ Error responses:
 				appNo: z.string()
 					.transform(val => val.toUpperCase())
 					.describe("The app type for the backlog issue. Allowed values: N, KN, SK, ZET, DMINI (case-insensitive)"),
+				assetsImageIds: z.array(z.string()).optional().describe("Optional list of uploaded image IDs to attach when creating the issue"),
 			},
 			{
 				description: `Create a new backlog ticket with a title, description, and app type (N, KN, SK, ZET, DMINI). Case-insensitive.
 
-Response format (200):
-{
-  "id": "DEV_KN-123",
-  "url": "https://zhdoa.backlog.jp/view/DEV_KN-123",
-  "title": "Issue title",
-  "description": "Issue description",
-  "appNo": "KN"
-}
+	Response format (200):
+	{
+	  "id": "DEV_KN-123",
+	  "url": "https://zhdoa.backlog.jp/view/DEV_KN-123",
+	  "title": "Issue title",
+	  "description": "Issue description",
+	  "appNo": "KN"
+	}
 
 Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`
 			},
-			async ({ title, description, appNo }) => {
-				return makeApiCall('/api/backlog/createIssue', { title, description, appNo });
+			async ({ title, description, appNo, assetsImageIds }) => {
+				const body: Record<string, unknown> = { title, description, appNo };
+				if (assetsImageIds) body.assetsImageIds = assetsImageIds;
+				return makeApiCall('/api/backlog/createIssue', body);
 			}
 		);
 
