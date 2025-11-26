@@ -239,17 +239,23 @@ Error responses:
 		this.server.tool(
 			"search",
 			{
-				query: z.string().describe("The search query to find documents/issues (e.g., version number, keywords)"),
+				query: z.string().describe("The search query to find tickets (e.g., version number like 1.1.1, keywords like 'bug fix')"),
+				appNo: z.string()
+					.transform(val => val.toUpperCase())
+					.describe("The app type to search tickets for. Allowed values: N, KN, SK, ZET, DMINI (case-insensitive)")
 			},
 			{
-				description: `Search for documents and issues using a text query.
+				description: `Search for tickets on Backlog based on text query and app type (N, KN, SK, ZET, DMINI). Returns list of matching tickets.
 
 Response format (200):
 [
   {
-    "id": "DEV_ZET_APP-266",
-    "title": "Document or issue title",
-    "url": "https://zhdoa.backlog.jp/view/DEV_ZET_APP-266"
+    "key": "DEV_ZET_APP-266",
+    "title": "【ZET】アプリVer1.1.1リリース（IOS、AOS）"
+  },
+  {
+    "key": "DEV_ZET_APP-265",
+    "title": "【ZET】Bug fix cho tính năng đăng nhập"
   }
 ]
 
@@ -257,8 +263,8 @@ Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`
 			},
-			async ({ query }) => {
-				return makeApiCall('/api/documents/searchShort', { text: query });
+			async ({ query, appNo }) => {
+				return makeApiCall('/api/data/search', { text: query, appNo });
 			},
 		);
 
