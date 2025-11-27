@@ -562,6 +562,37 @@ Error responses:
 				return makeApiCall('/manage/getScreenShot', {});
 			}
 		);
+
+		// Fix code using Claude CLI based on error logs
+		this.server.tool(
+			"fixCode",
+			{
+				apiName: z.string().optional().describe("Name of the API endpoint to fix (e.g., replyIssueAction). Optional, defaults to empty string"),
+				extraInfo: z.string().optional().describe("Additional information to pass to the batch file. Optional, defaults to empty string")
+			},
+			{
+				description: `Fix code using Claude CLI based on error logs. Invokes Claude CLI to read error logs and automatically fix code issues. Waits for the process to complete (with 10 minute timeout).
+
+Response format (200):
+{
+  "message": "fixCode.bat completed successfully" or "fixCode.bat completed with errors",
+  "exitCode": 0 (success) or non-zero (error),
+  "stdout": "Command output...",
+  "stderr": "Error messages...",
+  "batchFile": "D:/workspace/personal-app/fixCode.bat"
+}
+
+Error responses:
+- 400: Bad request
+- 500: Server error`
+			},
+			async ({ apiName, extraInfo }) => {
+				const body: Record<string, unknown> = {};
+				if (apiName) body.apiName = apiName;
+				if (extraInfo) body.extraInfo = extraInfo;
+				return makeApiCall('/manage/fixCode', body);
+			}
+		);
 	}
 }
 
