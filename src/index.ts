@@ -593,6 +593,34 @@ Error responses:
 				return makeApiCall('/manage/fixCode', body);
 			}
 		);
+
+		// Register lesson learned to Google Sheets
+		this.server.tool(
+			"registerLessonLearned",
+			{
+				context: z.string().describe("Context/situation where the lesson was learned (e.g., 'Handling async operations in Playwright')"),
+				bad: z.string().describe("Bad practice that was used (e.g., 'Using .last(10) method that does not exist')"),
+				why: z.string().describe("Why that approach was bad (e.g., 'Playwright does not have .last() method for locators')"),
+				good: z.string().describe("Good practice to follow instead (e.g., 'Use .nth() with loop to get the last items')"),
+				lessionLearn: z.string().describe("The lesson learned to remember (e.g., 'Always check Playwright API documentation before using new methods')")
+			},
+			{
+				description: `Register a lesson learned to Google Sheets to avoid similar issues in the future. Records the context, bad practice, reason why it's bad, good practice, and the lesson learned.
+
+Response format (200):
+{
+  "success": true,
+  "message": "Lesson learned đã được ghi lại thành công"
+}
+
+Error responses:
+- 400: Invalid request (missing parameters)
+- 500: Server error`
+			},
+			async ({ context, bad, why, good, lessionLearn }) => {
+				return makeApiCall('/api/common/lessionLearn', { context, bad, why, good, lessionLearn });
+			}
+		);
 	}
 }
 
