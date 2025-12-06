@@ -210,7 +210,7 @@ Error responses:
 			{
 				url: z.string().describe("The Jira ticket URL or key to reply to (e.g., https://pm.gem-corp.tech/browse/ZEN2025-1197 or ZEN2025-1197)"),
 				content: z.string().describe("The content of the comment to post"),
-				imageUrl: z.string().optional().describe("Screenshot image URL to attach to the comment"),
+				assetsImageIds: z.array(z.string()).optional().describe("Optional list of uploaded image IDs to attach to the reply"),
 			},
 			{
 				description: `Reply to an existing Jira ticket with a comment. Requires the ticket URL/key and reply content.
@@ -221,16 +221,17 @@ Response format (200):
   "url": "https://pm.gem-corp.tech/browse/ZEN2025-1197",
   "content": "Reply content",
   "commentUrl": "URL of the comment after posting",
-  "imageUrl": "URL of the screenshot image of the screen after commenting"
+  "imageUrl": "URL of the screenshot image of the screen after commenting",
+  "suggestReplyMember": "Name of suggested member to reply (extracted from latest comment or assigned person)"
 }
 
 Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`
 			},
-			async ({ url, content, imageUrl }) => {
-				const body: any = { url, content };
-				if (imageUrl) body.imageUrl = imageUrl;
+			async ({ url, content, assetsImageIds }) => {
+				const body: Record<string, unknown> = { url, content };
+				if (assetsImageIds) body.assetsImageIds = assetsImageIds;
 				return makeApiCall('/api/jira/replyIssue', body);
 			}
 		);
