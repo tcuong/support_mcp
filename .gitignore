@@ -177,3 +177,6 @@ dist
 !.env.example
 
 .env
+
+.idea
+*.iml

@@ -385,14 +385,15 @@ Error responses:
 			}
 		);
 
-		// Read message by mention number
+		// Read message from mention by number or ID
 		this.server.tool(
-			"readMessageByMentionNo",
+			"readMessageFromMention",
 			{
-				mentionNo: z.number().min(1).describe("The mention number to read (1: first mention, 2: second mention, etc.)")
+				mentionNo: z.number().min(1).optional().describe("The mention number to read (1: first mention, 2: second mention, etc.). Required if mentionId is not provided."),
+				mentionId: z.string().optional().describe("The ID of the mention to read. Required if mentionNo is not provided.")
 			},
 			{
-				description: `Read a specific mention by its number from Microsoft Teams Activity tab. Opens Activity tab, selects mention by mentionNo and returns detailed content.
+				description: `Read a specific mention by its number or ID from Microsoft Teams Activity tab. Opens Activity tab, selects mention by mentionNo or mentionId and returns detailed content. At least one of mentionNo or mentionId must be provided.
 
 Response format (200):
 {
@@ -405,11 +406,14 @@ Response format (200):
 }
 
 Error responses:
-- 400: Invalid request (missing or wrong mentionNo)
+- 400: Invalid request (missing or wrong mentionNo/mentionId)
 - 500: Server error`
 			},
-			async ({ mentionNo }) => {
-				return makeApiCall('/api/teams/readMessageByMentionNo', { mentionNo });
+			async ({ mentionNo, mentionId }) => {
+				const body: Record<string, unknown> = {};
+				if (mentionNo) body.mentionNo = mentionNo;
+				if (mentionId) body.mentionId = mentionId;
+				return makeApiCall('/api/teams/readMessageFromMention', body);
 			}
 		);
 
