@@ -607,10 +607,11 @@ Error responses:
 				bad: z.string().describe("Bad practice that was used (e.g., 'Using .last(10) method that does not exist')"),
 				why: z.string().describe("Why that approach was bad (e.g., 'Playwright does not have .last() method for locators')"),
 				good: z.string().describe("Good practice to follow instead (e.g., 'Use .nth() with loop to get the last items')"),
-				lessionLearn: z.string().describe("The lesson learned to remember (e.g., 'Always check Playwright API documentation before using new methods')")
+				lessionLearn: z.string().describe("The lesson learned to remember (e.g., 'Always check Playwright API documentation before using new methods')"),
+				scope: z.enum(['vn', 'jp']).optional().describe("Scope of the lesson (vn, jp). Optional")
 			},
 			{
-				description: `Register a lesson learned to Google Sheets to avoid similar issues in the future. Records the context, bad practice, reason why it's bad, good practice, and the lesson learned.
+				description: `Register a lesson learned to Google Sheets to avoid similar issues in the future. Records the context, bad practice, reason why it's bad, good practice, the lesson learned, and optional scope.
 
 Response format (200):
 {
@@ -622,8 +623,10 @@ Error responses:
 - 400: Invalid request (missing parameters)
 - 500: Server error`
 			},
-			async ({ context, bad, why, good, lessionLearn }) => {
-				return makeApiCall('/api/common/lessionLearn', { context, bad, why, good, lessionLearn });
+			async ({ context, bad, why, good, lessionLearn, scope }) => {
+				const body: Record<string, unknown> = { context, bad, why, good, lessionLearn };
+				if (scope) body.scope = scope;
+				return makeApiCall('/api/common/lessionLearn', body);
 			}
 		);
 	}
