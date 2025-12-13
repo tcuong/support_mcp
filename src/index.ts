@@ -494,7 +494,8 @@ Error responses:
 		this.server.tool(
 			"findThread",
 			{
-				ticketKey: z.string().describe("Ticket key or URL (e.g., ZEN2025-1234, DEV_005_SPO-7012, or full URL of Jira/Backlog issue)")
+				ticketKey: z.string().describe("Ticket key or URL (e.g., ZEN2025-1234, DEV_005_SPO-7012, or full URL of Jira/Backlog issue)"),
+				appNo: z.enum(["SK", "KN", "N", "DMINI", "ZET"]).optional().describe("App type (SK, KN, N, DMINI, ZET). If thread is not found and appNo is provided, returns 5 most recent threads from appNo channel and 5 from GENERAL channel.")
 			},
 			{
 				description: `Find Teams thread URL from ticket key. Searches for Teams thread URL in Google Sheets based on ticket key (Jira or Backlog key). Can accept full URL or just ticket key.
@@ -506,18 +507,32 @@ If found:
   "teamsUrl": "https://teams.microsoft.com/l/message/..."
 }
 
-If not found:
+If not found (without appNo):
 {
   "message": "Thread Url not found",
   "teamsUrl": null
+}
+
+If not found (with appNo provided):
+{
+  "message": "Thread Url not found",
+  "teamsUrl": null,
+  "suggestionThreads": {
+    "appThreads": [
+      { "teamsUrl": "...", "title": "...", "summary": "...", "appNo": "KN" }
+    ],
+    "generalThreads": [
+      { "teamsUrl": "...", "title": "...", "summary": "...", "appNo": "GENERAL" }
+    ]
+  }
 }
 
 Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`
 			},
-			async ({ ticketKey }) => {
-				return makeApiCall('/api/teams/findThread', { ticketKey });
+			async ({ ticketKey, appNo }) => {
+				return makeApiCall('/api/teams/findThread', { ticketKey, appNo });
 			}
 		);
 
