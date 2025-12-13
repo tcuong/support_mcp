@@ -60,16 +60,24 @@ export class MyMCP extends McpAgent {
 				oneCommentOnly: z.boolean().optional().describe("If response data is too large (ResponseTooLargeError), set to true to fetch less data. Default: false")
 			},
 			{
-				description: `Browse and fetch content from a URL using the Zensho API. Supports Jira issues, Backlog URLs/keys, and Teams messages.
+				description: `Browse and fetch content from a URL using the Zensho API. Supports Jira issues, Backlog URLs/keys, and Teams messages. Can limit the number of comments with maxCommentNum parameter (default: 10).
 
 Response format (200):
 {
   "title": "Title of the issue/ticket or message",
   "content": "Main extracted content",
   "reference_links": "Extracted reference links within content",
-  "comments": "Comments from related users",
+  "comments": "Comments from related users (number depends on maxCommentNum)",
   "parentContent": "Parent content (for Teams thread starter)",
-  "teamsUrl": "URL of Teams message if available (only when type is teams or when issue has link to Teams)"
+  "teamsUrl": "URL of Teams message if available (only when type is teams or when issue has link to Teams)",
+  "assetsImageIds": ["image-id-1", "image-id-2"],
+  "jiraKey": "ZEN2025-123" (if browsing Jira issue),
+  "backlogKey": "DEV_ZET_APP-266" (if browsing Backlog issue),
+  "backlogLatestContent": {
+    "title": "Backlog issue title",
+    "comments": "Latest comments from Backlog issue",
+    "backlogKey": "DEV_ZET_APP-266"
+  } (if browsing Jira issue with link to Backlog, can be null or empty object)
 }
 
 Error responses:
