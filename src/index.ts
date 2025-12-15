@@ -126,7 +126,7 @@ Error responses:
 			{
 				url: z.string().describe("The backlog ticket URL or key to reply to (e.g., DEV_005_SPO-7012)"),
 				content: z.string().describe("The content of the comment to post"),
-				shouldAssign: z.boolean().describe("Whether to assign the issue to the first person mentioned in the comment"),
+				shouldAssign: z.boolean().describe("Whether to assign the issue to the first person mentioned in the comment. If the ticket is still within your responsibility scope, set to false; otherwise set to true."),
 				assetsImageIds: z.array(z.string()).optional().describe("Optional list of uploaded image IDs to attach to the reply"),
 			},
 			{
