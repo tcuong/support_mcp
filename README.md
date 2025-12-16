@@ -10,7 +10,7 @@ This will deploy your MCP server to a URL like: `remote-mcp-server-authless.<you
 
 Alternatively, you can use the command line below to get the remote MCP Server created on your local machine:
 ```bash
-npm create cloudflare@latest -- my-mcp-server --template=cloudflare/ai/demos/remote-mcp-authless
+npm create cloudflare@latest -- gms-mcp-server --template=cloudflare/ai/demos/remote-mcp-authless
 ```
 
 ## Environment Variables

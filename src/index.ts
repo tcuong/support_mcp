@@ -3,7 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 // Constants
-const API_BASE_URL = "https://scarflike-prepositionally-azariah.ngrok-free.dev";
+const API_BASE_URL = "https://earwig-warm-hawk.ngrok-free.app";
 
 // Helper functions
 function createSuccessResponse(data: any, customMessage?: string) {
@@ -45,7 +45,7 @@ async function makeApiCall(
 }
 
 // Define our MCP agent with tools
-export class MyMCP extends McpAgent {
+export class GMS_MCP extends McpAgent {
 	server = new McpServer({
 		name: "Zensho",
 		version: "1.0.0",
@@ -660,11 +660,11 @@ export default {
 		const url = new URL(request.url);
 
 		if (url.pathname === "/sse" || url.pathname === "/sse/message") {
-			return MyMCP.serveSSE("/sse").fetch(request, env, ctx);
+			return GMS_MCP.serveSSE("/sse").fetch(request, env, ctx);
 		}
 
 		if (url.pathname === "/mcp") {
-			return MyMCP.serve("/mcp").fetch(request, env, ctx);
+			return GMS_MCP.serve("/mcp").fetch(request, env, ctx);
 		}
 
 		return new Response("Not found", { status: 404 });
