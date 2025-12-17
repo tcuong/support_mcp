@@ -70,7 +70,7 @@ Response format (200):
   "comments": "Comments from related users (number depends on maxCommentNum)",
   "parentContent": "Parent content (for Teams thread starter)",
   "teamsUrl": "URL of Teams message if available (only when type is teams or when issue has link to Teams)",
-  "assetsImageIds": ["image-id-1", "image-id-2"],
+  "attachedFileIds": ["file-id-1", "file-id-2"],
   "jiraKey": "ZEN2025-123" (if browsing Jira issue),
   "backlogKey": "DEV_ZET_APP-266" (if browsing Backlog issue),
   "backlogLatestContent": {
@@ -127,7 +127,7 @@ Error responses:
 				url: z.string().describe("The backlog ticket URL or key to reply to (e.g., DEV_005_SPO-7012)"),
 				content: z.string().describe("The content of the comment to post"),
 				shouldAssign: z.boolean().describe("Whether to assign the issue to the first person mentioned in the comment. If the ticket is still within your responsibility scope, set to false; otherwise set to true."),
-				assetsImageIds: z.array(z.string()).optional().describe("Optional list of uploaded image IDs to attach to the reply"),
+				attachedFileIds: z.array(z.string()).optional().describe("Optional list of uploaded file IDs (images or other attachments) to attach to the reply"),
 			},
 			{
 				description: `Reply to an existing backlog ticket with a comment. Requires the ticket URL/key and content.
@@ -143,9 +143,9 @@ Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`
 			},
-			async ({ url, content, shouldAssign, assetsImageIds }) => {
+			async ({ url, content, shouldAssign, attachedFileIds }) => {
 				const body: Record<string, unknown> = { url, content, shouldAssign };
-				if (assetsImageIds) body.assetsImageIds = assetsImageIds;
+				if (attachedFileIds) body.attachedFileIds = attachedFileIds;
 				return makeApiCall('/api/backlog/replyIssue', body);
 			}
 		);
@@ -159,7 +159,7 @@ Error responses:
 				appNo: z.string()
 					.transform(val => val.toUpperCase())
 					.describe("The app type for the backlog issue. Allowed values: N, KN, SK, ZET, DMINI (case-insensitive)"),
-				assetsImageIds: z.array(z.string()).optional().describe("Optional list of uploaded image IDs to attach when creating the issue"),
+				attachedFileIds: z.array(z.string()).optional().describe("Optional list of uploaded file IDs (images or other attachments) to attach when creating the issue"),
 			},
 			{
 				description: `Create a new backlog ticket with a title, description, and app type (N, KN, SK, ZET, DMINI). Case-insensitive.
@@ -177,9 +177,9 @@ Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`
 			},
-			async ({ title, description, appNo, assetsImageIds }) => {
+			async ({ title, description, appNo, attachedFileIds }) => {
 				const body: Record<string, unknown> = { title, description, appNo };
-				if (assetsImageIds) body.assetsImageIds = assetsImageIds;
+				if (attachedFileIds) body.attachedFileIds = attachedFileIds;
 				return makeApiCall('/api/backlog/createIssue', body);
 			}
 		);
@@ -218,7 +218,7 @@ Error responses:
 			{
 				url: z.string().describe("The Jira ticket URL or key to reply to (e.g., https://pm.gem-corp.tech/browse/ZEN2025-1197 or ZEN2025-1197)"),
 				content: z.string().describe("The content of the comment to post"),
-				assetsImageIds: z.array(z.string()).optional().describe("Optional list of uploaded image IDs to attach to the reply"),
+				attachedFileIds: z.array(z.string()).optional().describe("Optional list of uploaded file IDs (images or other attachments) to attach to the reply"),
 			},
 			{
 				description: `Reply to an existing Jira ticket with a comment. Requires the ticket URL/key and reply content.
@@ -237,9 +237,9 @@ Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`
 			},
-			async ({ url, content, assetsImageIds }) => {
+			async ({ url, content, attachedFileIds }) => {
 				const body: Record<string, unknown> = { url, content };
-				if (assetsImageIds) body.assetsImageIds = assetsImageIds;
+				if (attachedFileIds) body.attachedFileIds = attachedFileIds;
 				return makeApiCall('/api/jira/replyIssue', body);
 			}
 		);
