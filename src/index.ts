@@ -652,8 +652,38 @@ Error responses:
 				return makeApiCall('/api/common/lessionLearn', body);
 			}
 		);
+
+		// Analyze image/file using AI
+		this.server.tool(
+			"analyzeImage",
+			{
+				fileId: z.string().describe("ID of the image/file to analyze (filename in the images folder)"),
+				prompt: z.string().optional().describe("Prompt to guide AI analysis of the image. Default: 'Analyze this image and describe what you see.'")
+			},
+			{
+				description: `Analyze an uploaded file using AI and return a description or analysis based on the provided prompt.
+
+Response format (200):
+{
+  "fileId": "screenshot.png",
+  "analysis": "The image shows a login form with username and password fields...",
+  "error": null
+}
+
+Error responses:
+- 400: Bad request (missing fileId or unsupported format)
+- 500: Server error`
+			},
+			async ({ fileId, prompt }) => {
+				const body: Record<string, unknown> = { fileId };
+				if (prompt) body.prompt = prompt;
+				return makeApiCall('/manage/analyzeImage', body);
+			}
+		);
 	}
 }
+
+
 
 export default {
 	fetch(request: Request, env: Env, ctx: ExecutionContext) {
