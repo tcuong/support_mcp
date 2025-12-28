@@ -146,7 +146,7 @@ export class MyMCP extends McpAgent<Env> {
 		if (this.env.DISABLEd_FUNCTIONS.JIRA) return;
 		// Create Jira ticket
 		this.server.tool(
-			"createJiraTicket",
+			"jira:createJiraTicket",
 			{
 				title: z.string().describe(toolDescriptions.createJiraTicket.params.title),
 				description: z.string().describe(toolDescriptions.createJiraTicket.params.description),
@@ -162,7 +162,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Reply Jira ticket
 		this.server.tool(
-			"replyJiraTicket",
+			"jira:replyJiraTicket",
 			{
 				url: z.string().describe(toolDescriptions.replyJiraTicket.params.url),
 				content: z.string().describe(toolDescriptions.replyJiraTicket.params.content),
@@ -177,7 +177,7 @@ export class MyMCP extends McpAgent<Env> {
 		);
 		// List Jira handling tickets by app type
 		this.server.tool(
-			"listJiraHandlingTickets",
+			"jira:listJiraHandlingTickets",
 			{
 				url: z.string().describe(toolDescriptions.listJiraHandlingTickets.params.url),
 				appNo: z.string().describe(toolDescriptions.listJiraHandlingTickets.params.appNo)
@@ -195,7 +195,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// List handling ticket by app type
 		this.server.tool(
-			"listBacklogHandlingTickets",
+			"backlog:listBacklogHandlingTickets",
 			{
 				appNo: z.string()
 					.transform(val => val.toUpperCase())
@@ -209,7 +209,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Reply backlog ticket
 		this.server.tool(
-			"replyBacklogTicket",
+			"backlog:replyBacklogTicket",
 			{
 				url: z.string().describe(toolDescriptions.replyBacklogTicket.params.url),
 				content: z.string().describe(toolDescriptions.replyBacklogTicket.params.content),
@@ -226,7 +226,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Create backlog ticket
 		this.server.tool(
-			"createBacklogTicket",
+			"backlog:createBacklogTicket",
 			{
 				title: z.string().describe(toolDescriptions.createBacklogTicket.params.title),
 				description: z.string().describe(toolDescriptions.createBacklogTicket.params.description),
@@ -245,7 +245,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Read first unread notification from Backlog
 		this.server.tool(
-			"readFirstUnreadNotification",
+			"backlog:readFirstUnreadNotification",
 			{},
 			{ description: toolDescriptions.readFirstUnreadNotification.description },
 			async () => {
@@ -255,7 +255,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Read all notifications from Backlog
 		this.server.tool(
-			"readAllNotifications",
+			"backlog:readAllNotifications",
 			{},
 			{ description: toolDescriptions.readAllNotifications.description },
 			async () => {
@@ -270,7 +270,7 @@ export class MyMCP extends McpAgent<Env> {
 		
 		// Reply in Teams
 		this.server.tool(
-			"replyInTeams",
+			"teams:replyInTeams",
 			{
 				text: z.string().describe(toolDescriptions.replyInTeams.params.text),
 				url: z.string().optional().describe(toolDescriptions.replyInTeams.params.url),
@@ -287,7 +287,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Read mentions from Teams
 		this.server.tool(
-			"readMentions",
+			"teams:readMentions",
 			{},
 			{ description: toolDescriptions.readMentions.description },
 			async () => {
@@ -297,7 +297,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Read message from mention by number or ID
 		this.server.tool(
-			"readMessageFromMention",
+			"teams:readMessageFromMention",
 			{
 				mentionNo: z.number().min(1).optional().describe(toolDescriptions.readMessageFromMention.params.mentionNo),
 				mentionId: z.string().optional().describe(toolDescriptions.readMessageFromMention.params.mentionId)
@@ -313,7 +313,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Read threads from Teams channel
 		this.server.tool(
-			"readThreads",
+			"teams:readThreads",
 			{
 				channelName: z.string().describe(toolDescriptions.readThreads.params.channelName)
 			},
@@ -325,7 +325,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Create thread in Teams channel
 		this.server.tool(
-			"createThread",
+			"teams:createThread",
 			{
 				title: z.string().describe(toolDescriptions.createThread.params.title),
 				content: z.string().describe(toolDescriptions.createThread.params.content),
@@ -339,7 +339,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Find Teams thread URL from ticket key
 		this.server.tool(
-			"findThread",
+			"teams:findThread",
 			{
 				ticketKey: z.string().describe(toolDescriptions.findThread.params.ticketKey),
 				appNo: z.enum(["SK", "KN", "N", "DMINI", "ZET"]).optional().describe(toolDescriptions.findThread.params.appNo)
@@ -355,7 +355,7 @@ export class MyMCP extends McpAgent<Env> {
 		if (this.env.DISABLEd_FUNCTIONS.SLACK) return;
 		// Read mentions from Slack
 		this.server.tool(
-			"readMentionsSlack",
+			"slack:readMentionsSlack",
 			{
 				isSystem: z.boolean().optional().describe(toolDescriptions.readMentionsSlack.params.isSystem),
 				registerTodo: z.boolean().optional().describe(toolDescriptions.readMentionsSlack.params.registerTodo)
@@ -371,7 +371,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Read mention by mentionId from Slack
 		this.server.tool(
-			"readMentionByMentionId",
+			"slack:readMentionByMentionId",
 			{
 				mentionId: z.string().describe(toolDescriptions.readMentionByMentionId.params.mentionId),
 				isSystem: z.boolean().optional().describe(toolDescriptions.readMentionByMentionId.params.isSystem)
@@ -386,7 +386,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Reply message in Slack thread
 		this.server.tool(
-			"replyMessageSlack",
+			"slack:replyMessageSlack",
 			{
 				threadUrl: z.string().describe(toolDescriptions.replyMessageSlack.params.threadUrl),
 				content: z.string().describe(toolDescriptions.replyMessageSlack.params.content),
