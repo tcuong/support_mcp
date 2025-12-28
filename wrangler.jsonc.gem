@@ -8,7 +8,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "gms-mcp-server",
+	"name": "my-mcp-server",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-03-10",
 	"compatibility_flags": [
@@ -17,18 +17,9 @@
 	"migrations": [
 		{
 			"new_sqlite_classes": [
-				"GMS_MCP"
+				"MyMCP"
 			],
 			"tag": "v1"
-		},
-		{
-			"renamed_classes": [
-				{
-					"from": "GMS_MCP",
-					"to": "MyMCP"
-				}
-			],
-			"tag": "v2"
 		}
 	],
 	"durable_objects": {
@@ -43,8 +34,7 @@
 		"enabled": true
 	},
 	"vars": {
-		"API_BASE_URL": "https://earwig-warm-hawk.ngrok-free.app",
-		"MCP_NAME": "GG"
+		"API_BASE_URL": "https://scarflike-prepositionally-azariah.ngrok-free.dev"
 	}
 	/**
 	 * Smart Placement

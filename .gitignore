@@ -177,8 +177,12 @@ dist
 !.env.example
 
 .env
+.wrangler.jsonc
 
 .idea
 *.iml
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 .claude/

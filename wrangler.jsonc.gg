@@ -6,7 +6,7 @@
  * For more details on how to configure Wrangler, refer to:
  * https://developers.cloudflare.com/workers/wrangler/configuration/
  */
-{
+ {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "gms-mcp-server",
 	"main": "src/index.ts",
@@ -17,18 +17,9 @@
 	"migrations": [
 		{
 			"new_sqlite_classes": [
-				"GMS_MCP"
+				"MyMCP"
 			],
 			"tag": "v1"
-		},
-		{
-			"renamed_classes": [
-				{
-					"from": "GMS_MCP",
-					"to": "MyMCP"
-				}
-			],
-			"tag": "v2"
 		}
 	],
 	"durable_objects": {
