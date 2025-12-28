@@ -17,9 +17,18 @@
 	"migrations": [
 		{
 			"new_sqlite_classes": [
-				"MyMCP"
+				"GMS_MCP"
 			],
 			"tag": "v1"
+		},
+		{
+			"renamed_classes": [
+				{
+					"from": "GMS_MCP",
+					"to": "MyMCP"
+				}
+			],
+			"tag": "v2"
 		}
 	],
 	"durable_objects": {

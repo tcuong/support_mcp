@@ -181,8 +181,6 @@ dist
 
 .idea
 *.iml
-<<<<<<< HEAD
-
-=======
->>>>>>> main
 .claude/
+
+package-lock.json
