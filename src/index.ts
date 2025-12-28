@@ -652,8 +652,117 @@ Error responses:
 				return makeApiCall('/api/common/lessionLearn', body);
 			}
 		);
+
+		// Read mentions from Slack
+		this.server.tool(
+			"readMentionsSlack",
+			{
+				isSystem: z.boolean().optional().describe("Use system browser (default: false)"),
+				registerTodo: z.boolean().optional().describe("Register mentions to todo list (default: false)")
+			},
+			{
+				description: `Read all mentions from Slack Activity tab and return list of mentions with id and content.
+
+Response format (200):
+[
+  {
+    "id": "at_user-C09KXQUDRJ8-1766471371.007199",
+    "text": "Thông báo về việc release version mới"
+  },
+  {
+    "id": "at_channel-C09KXQUDRJ8-1766471400.008000",
+    "text": "Thông báo về cuộc họp ngày mai"
+  }
+]
+
+Error responses:
+- 500: Server error`
+			},
+			async ({ isSystem, registerTodo }) => {
+				const body: Record<string, unknown> = {};
+				if (isSystem !== undefined) body.isSystem = isSystem;
+				if (registerTodo !== undefined) body.registerTodo = registerTodo;
+				return makeApiCall('/api/slack/readMentionsSlack', body);
+			}
+		);
+
+		// Read mention by mentionId from Slack
+		this.server.tool(
+			"readMentionByMentionId",
+			{
+				mentionId: z.string().describe("ID of the mention to read (format: at_user-{channelId}-{timestamp})"),
+				isSystem: z.boolean().optional().describe("Use system browser (default: false)")
+			},
+			{
+				description: `Read detailed content of a specific mention by ID from Slack. Clicks on the specific mention by ID and reads full message content from channel/thread view.
+
+Response format (200):
+{
+  "mentionId": "at_user-C09KXQUDRJ8-1766471371.007199",
+  "threadUrl": "https://net-jvb.slack.com/messages/C09KXQUDRJ8/p1766471371007199",
+  "targetMessage": {
+    "messageId": "msg-1766471371.007199",
+    "sender": "Nguyễn Văn A",
+    "timestamp": "10:30 AM",
+    "content": "Nội dung message được mention",
+    "files": [],
+    "isTarget": true
+  },
+  "messages": [
+    {
+      "messageId": "msg-1766471371.007199",
+      "sender": "Nguyễn Văn A",
+      "timestamp": "10:30 AM",
+      "content": "Nội dung message được mention",
+      "files": [],
+      "isTarget": true
+    }
+  ]
+}
+
+Error responses:
+- 400: Invalid request (missing mentionId)
+- 500: Server error`
+			},
+			async ({ mentionId, isSystem }) => {
+				const body: Record<string, unknown> = { mentionId };
+				if (isSystem !== undefined) body.isSystem = isSystem;
+				return makeApiCall('/api/slack/readMentionByMentionId', body);
+			}
+		);
+
+		// Reply message in Slack thread
+		this.server.tool(
+			"replyMessageSlack",
+			{
+				threadUrl: z.string().describe("URL of the Slack thread to reply to"),
+				content: z.string().describe("Content of the message to send (supports @mention)"),
+				isSystem: z.boolean().optional().describe("Use system browser (default: false)")
+			},
+			{
+				description: `Reply to a message in a Slack thread with specified content. Supports @mention users.
+
+Response format (200):
+{
+  "success": true,
+  "message": "Message sent successfully",
+  "threadUrl": "https://net-jvb.slack.com/messages/C09KXQUDRJ8/p1766471371007199"
+}
+
+Error responses:
+- 400: Invalid request (missing threadUrl or content)
+- 500: Server error`
+			},
+			async ({ threadUrl, content, isSystem }) => {
+				const body: Record<string, unknown> = { threadUrl, content };
+				if (isSystem !== undefined) body.isSystem = isSystem;
+				return makeApiCall('/api/slack/replyMessageSlack', body);
+			}
+		);
 	}
 }
+
+
 
 export default {
 	fetch(request: Request, env: Env, ctx: ExecutionContext) {

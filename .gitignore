@@ -180,3 +180,5 @@ dist
 
 .idea
 *.iml
+
+.claude/
