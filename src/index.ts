@@ -61,6 +61,138 @@ export class MyMCP extends McpAgent<Env> {
 			}
 		);
 
+		this.addJiraTools();
+		this.addBacklogTools();
+		this.addSlackTools();
+		this.addTeamsTools();
+
+		// Search tool required by ChatGPT
+		this.server.tool(
+			"search",
+			{
+				query: z.string().describe(toolDescriptions.search.params.query),
+				appNo: z.string()
+					.transform(val => val.toUpperCase())
+					.describe(toolDescriptions.search.params.appNo)
+			},
+			{ description: toolDescriptions.search.description },
+			async ({ query, appNo }) => {
+				return this.makeApiCall('/api/data/search', { text: query, appNo });
+			},
+		);
+
+		// Take screenshot of current selenium web page
+		this.server.tool(
+			"getScreenShot",
+			{},
+			{ description: toolDescriptions.getScreenShot.description },
+			async () => {
+				return this.makeApiCall('/manage/getScreenShot', {});
+			}
+		);
+
+		// Fix code using Claude CLI based on error logs
+		this.server.tool(
+			"fixCode",
+			{
+				apiName: z.string().optional().describe(toolDescriptions.fixCode.params.apiName),
+				extraInfo: z.string().optional().describe(toolDescriptions.fixCode.params.extraInfo)
+			},
+			{ description: toolDescriptions.fixCode.description },
+			async ({ apiName, extraInfo }) => {
+				const body: Record<string, unknown> = {};
+				if (apiName) body.apiName = apiName;
+				if (extraInfo) body.extraInfo = extraInfo;
+				return this.makeApiCall('/manage/fixCode', body);
+			}
+		);
+
+		// Register lesson learned to Google Sheets
+		this.server.tool(
+			"registerLessonLearned",
+			{
+				context: z.string().describe(toolDescriptions.registerLessonLearned.params.context),
+				bad: z.string().describe(toolDescriptions.registerLessonLearned.params.bad),
+				why: z.string().describe(toolDescriptions.registerLessonLearned.params.why),
+				good: z.string().describe(toolDescriptions.registerLessonLearned.params.good),
+				lessionLearn: z.string().describe(toolDescriptions.registerLessonLearned.params.lessionLearn),
+				scope: z.enum(['vn', 'jp']).optional().describe(toolDescriptions.registerLessonLearned.params.scope)
+			},
+			{ description: toolDescriptions.registerLessonLearned.description },
+			async ({ context, bad, why, good, lessionLearn, scope }) => {
+				const body: Record<string, unknown> = { context, bad, why, good, lessionLearn };
+				if (scope) body.scope = scope;
+				return this.makeApiCall('/api/common/lessionLearn', body);
+			}
+		);
+
+		// Analyze image/file using AI
+		this.server.tool(
+			"analyzeImage",
+			{
+				fileId: z.string().describe(toolDescriptions.analyzeImage.params.fileId),
+				prompt: z.string().optional().describe(toolDescriptions.analyzeImage.params.prompt)
+			},
+			{ description: toolDescriptions.analyzeImage.description },
+			async ({ fileId, prompt }) => {
+				const body: Record<string, unknown> = { fileId };
+				if (prompt) body.prompt = prompt;
+				return this.makeApiCall('/manage/analyzeImage', body);
+			}
+		);
+	}
+
+	private addJiraTools() {
+		if (this.env.DISABLEd_FUNCTIONS.JIRA) return;
+		// Create Jira ticket
+		this.server.tool(
+			"createJiraTicket",
+			{
+				title: z.string().describe(toolDescriptions.createJiraTicket.params.title),
+				description: z.string().describe(toolDescriptions.createJiraTicket.params.description),
+				type: z.string()
+					.transform(val => val.toUpperCase())
+					.describe(toolDescriptions.createJiraTicket.params.type),
+			},
+			{ description: toolDescriptions.createJiraTicket.description },
+			async ({ title, description, type }) => {
+				return this.makeApiCall('/api/jira/createIssue', { title, description, type });
+			}
+		);
+
+		// Reply Jira ticket
+		this.server.tool(
+			"replyJiraTicket",
+			{
+				url: z.string().describe(toolDescriptions.replyJiraTicket.params.url),
+				content: z.string().describe(toolDescriptions.replyJiraTicket.params.content),
+				attachedFileIds: z.array(z.string()).optional().describe(toolDescriptions.replyJiraTicket.params.attachedFileIds),
+			},
+			{ description: toolDescriptions.replyJiraTicket.description },
+			async ({ url, content, attachedFileIds }) => {
+				const body: Record<string, unknown> = { url, content };
+				if (attachedFileIds) body.attachedFileIds = attachedFileIds;
+				return this.makeApiCall('/api/jira/replyIssue', body);
+			}
+		);
+		// List Jira handling tickets by app type
+		this.server.tool(
+			"listJiraHandlingTickets",
+			{
+				url: z.string().describe(toolDescriptions.listJiraHandlingTickets.params.url),
+				appNo: z.string().describe(toolDescriptions.listJiraHandlingTickets.params.appNo)
+			},
+			{ description: toolDescriptions.listJiraHandlingTickets.description },
+			async ({ url, appNo }) => {
+				return this.makeApiCall('/api/jira/listHandlingTickets', { url, appNo });
+			}
+		);
+		
+	}
+
+	private addBacklogTools() {
+		if (this.env.DISABLEd_FUNCTIONS.BACKLOG) return;
+
 		// List handling ticket by app type
 		this.server.tool(
 			"listBacklogHandlingTickets",
@@ -111,53 +243,6 @@ export class MyMCP extends McpAgent<Env> {
 			}
 		);
 
-		// Create Jira ticket
-		this.server.tool(
-			"createJiraTicket",
-			{
-				title: z.string().describe(toolDescriptions.createJiraTicket.params.title),
-				description: z.string().describe(toolDescriptions.createJiraTicket.params.description),
-				type: z.string()
-					.transform(val => val.toUpperCase())
-					.describe(toolDescriptions.createJiraTicket.params.type),
-			},
-			{ description: toolDescriptions.createJiraTicket.description },
-			async ({ title, description, type }) => {
-				return this.makeApiCall('/api/jira/createIssue', { title, description, type });
-			}
-		);
-
-		// Reply Jira ticket
-		this.server.tool(
-			"replyJiraTicket",
-			{
-				url: z.string().describe(toolDescriptions.replyJiraTicket.params.url),
-				content: z.string().describe(toolDescriptions.replyJiraTicket.params.content),
-				attachedFileIds: z.array(z.string()).optional().describe(toolDescriptions.replyJiraTicket.params.attachedFileIds),
-			},
-			{ description: toolDescriptions.replyJiraTicket.description },
-			async ({ url, content, attachedFileIds }) => {
-				const body: Record<string, unknown> = { url, content };
-				if (attachedFileIds) body.attachedFileIds = attachedFileIds;
-				return this.makeApiCall('/api/jira/replyIssue', body);
-			}
-		);
-		
-		// Search tool required by ChatGPT
-		this.server.tool(
-			"search",
-			{
-				query: z.string().describe(toolDescriptions.search.params.query),
-				appNo: z.string()
-					.transform(val => val.toUpperCase())
-					.describe(toolDescriptions.search.params.appNo)
-			},
-			{ description: toolDescriptions.search.description },
-			async ({ query, appNo }) => {
-				return this.makeApiCall('/api/data/search', { text: query, appNo });
-			},
-		);
-
 		// Read first unread notification from Backlog
 		this.server.tool(
 			"readFirstUnreadNotification",
@@ -177,7 +262,12 @@ export class MyMCP extends McpAgent<Env> {
 				return this.makeApiCall('/api/backlog/readAllNotifications', {});
 			}
 		);
+	}
 
+	private addTeamsTools() {
+		if (this.env.DISABLEd_FUNCTIONS.TEAMS) return;
+
+		
 		// Reply in Teams
 		this.server.tool(
 			"replyInTeams",
@@ -259,65 +349,10 @@ export class MyMCP extends McpAgent<Env> {
 				return this.makeApiCall('/api/teams/findThread', { ticketKey, appNo });
 			}
 		);
+	}
 
-		// List Jira handling tickets by app type
-		this.server.tool(
-			"listJiraHandlingTickets",
-			{
-				url: z.string().describe(toolDescriptions.listJiraHandlingTickets.params.url),
-				appNo: z.string().describe(toolDescriptions.listJiraHandlingTickets.params.appNo)
-			},
-			{ description: toolDescriptions.listJiraHandlingTickets.description },
-			async ({ url, appNo }) => {
-				return this.makeApiCall('/api/jira/listHandlingTickets', { url, appNo });
-			}
-		);
-
-		// Take screenshot of current selenium web page
-		this.server.tool(
-			"getScreenShot",
-			{},
-			{ description: toolDescriptions.getScreenShot.description },
-			async () => {
-				return this.makeApiCall('/manage/getScreenShot', {});
-			}
-		);
-
-		// Fix code using Claude CLI based on error logs
-		this.server.tool(
-			"fixCode",
-			{
-				apiName: z.string().optional().describe(toolDescriptions.fixCode.params.apiName),
-				extraInfo: z.string().optional().describe(toolDescriptions.fixCode.params.extraInfo)
-			},
-			{ description: toolDescriptions.fixCode.description },
-			async ({ apiName, extraInfo }) => {
-				const body: Record<string, unknown> = {};
-				if (apiName) body.apiName = apiName;
-				if (extraInfo) body.extraInfo = extraInfo;
-				return this.makeApiCall('/manage/fixCode', body);
-			}
-		);
-
-		// Register lesson learned to Google Sheets
-		this.server.tool(
-			"registerLessonLearned",
-			{
-				context: z.string().describe(toolDescriptions.registerLessonLearned.params.context),
-				bad: z.string().describe(toolDescriptions.registerLessonLearned.params.bad),
-				why: z.string().describe(toolDescriptions.registerLessonLearned.params.why),
-				good: z.string().describe(toolDescriptions.registerLessonLearned.params.good),
-				lessionLearn: z.string().describe(toolDescriptions.registerLessonLearned.params.lessionLearn),
-				scope: z.enum(['vn', 'jp']).optional().describe(toolDescriptions.registerLessonLearned.params.scope)
-			},
-			{ description: toolDescriptions.registerLessonLearned.description },
-			async ({ context, bad, why, good, lessionLearn, scope }) => {
-				const body: Record<string, unknown> = { context, bad, why, good, lessionLearn };
-				if (scope) body.scope = scope;
-				return this.makeApiCall('/api/common/lessionLearn', body);
-			}
-		);
-
+	private addSlackTools() {
+		if (this.env.DISABLEd_FUNCTIONS.SLACK) return;
 		// Read mentions from Slack
 		this.server.tool(
 			"readMentionsSlack",
@@ -364,22 +399,8 @@ export class MyMCP extends McpAgent<Env> {
 				return this.makeApiCall('/api/slack/replyMessageSlack', body);
 			}
 		);
-
-		// Analyze image/file using AI
-		this.server.tool(
-			"analyzeImage",
-			{
-				fileId: z.string().describe(toolDescriptions.analyzeImage.params.fileId),
-				prompt: z.string().optional().describe(toolDescriptions.analyzeImage.params.prompt)
-			},
-			{ description: toolDescriptions.analyzeImage.description },
-			async ({ fileId, prompt }) => {
-				const body: Record<string, unknown> = { fileId };
-				if (prompt) body.prompt = prompt;
-				return this.makeApiCall('/manage/analyzeImage', body);
-			}
-		);
-	}
+		
+	}	
 }
 
 
