@@ -177,8 +177,9 @@ dist
 !.env.example
 
 .env
-.wrangler.jsonc
-
+wrangler.jsonc
 .idea
 *.iml
 .claude/
+
+package-lock.json

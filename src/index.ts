@@ -1,6 +1,7 @@
 import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+
 import { toolDescriptions } from "./descriptions";
 
 // Helper functions
@@ -22,7 +23,7 @@ function createErrorResponse(message: string) {
 // Define our MCP agent with tools
 export class MyMCP extends McpAgent<Env> {
 	server = new McpServer({
-		name: "Zensho",
+		name: this.env.MCP_NAME,
 		version: "1.0.0",
 	});
 
@@ -314,6 +315,53 @@ export class MyMCP extends McpAgent<Env> {
 				const body: Record<string, unknown> = { context, bad, why, good, lessionLearn };
 				if (scope) body.scope = scope;
 				return this.makeApiCall('/api/common/lessionLearn', body);
+			}
+		);
+
+		// Read mentions from Slack
+		this.server.tool(
+			"readMentionsSlack",
+			{
+				isSystem: z.boolean().optional().describe(toolDescriptions.readMentionsSlack.params.isSystem),
+				registerTodo: z.boolean().optional().describe(toolDescriptions.readMentionsSlack.params.registerTodo)
+			},
+			{ description: toolDescriptions.readMentionsSlack.description },
+			async ({ isSystem, registerTodo }) => {
+				const body: Record<string, unknown> = {};
+				if (isSystem !== undefined) body.isSystem = isSystem;
+				if (registerTodo !== undefined) body.registerTodo = registerTodo;
+				return this.makeApiCall('/api/slack/readMentionsSlack', body);
+			}
+		);
+
+		// Read mention by mentionId from Slack
+		this.server.tool(
+			"readMentionByMentionId",
+			{
+				mentionId: z.string().describe(toolDescriptions.readMentionByMentionId.params.mentionId),
+				isSystem: z.boolean().optional().describe(toolDescriptions.readMentionByMentionId.params.isSystem)
+			},
+			{ description: toolDescriptions.readMentionByMentionId.description },
+			async ({ mentionId, isSystem }) => {
+				const body: Record<string, unknown> = { mentionId };
+				if (isSystem !== undefined) body.isSystem = isSystem;
+				return this.makeApiCall('/api/slack/readMentionByMentionId', body);
+			}
+		);
+
+		// Reply message in Slack thread
+		this.server.tool(
+			"replyMessageSlack",
+			{
+				threadUrl: z.string().describe(toolDescriptions.replyMessageSlack.params.threadUrl),
+				content: z.string().describe(toolDescriptions.replyMessageSlack.params.content),
+				isSystem: z.boolean().optional().describe(toolDescriptions.replyMessageSlack.params.isSystem)
+			},
+			{ description: toolDescriptions.replyMessageSlack.description },
+			async ({ threadUrl, content, isSystem }) => {
+				const body: Record<string, unknown> = { threadUrl, content };
+				if (isSystem !== undefined) body.isSystem = isSystem;
+				return this.makeApiCall('/api/slack/replyMessageSlack', body);
 			}
 		);
 

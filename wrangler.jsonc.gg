@@ -6,9 +6,9 @@
  * For more details on how to configure Wrangler, refer to:
  * https://developers.cloudflare.com/workers/wrangler/configuration/
  */
-{
+ {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "my-mcp-server",
+	"name": "gms-mcp-server",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-03-10",
 	"compatibility_flags": [
@@ -17,9 +17,18 @@
 	"migrations": [
 		{
 			"new_sqlite_classes": [
-				"MyMCP"
+				"GMS_MCP"
 			],
 			"tag": "v1"
+		},
+		{
+			"renamed_classes": [
+				{
+					"from": "GMS_MCP",
+					"to": "MyMCP"
+				}
+			],
+			"tag": "v2"
 		}
 	],
 	"durable_objects": {
@@ -34,7 +43,8 @@
 		"enabled": true
 	},
 	"vars": {
-		"API_BASE_URL": "https://scarflike-prepositionally-azariah.ngrok-free.dev"
+		"API_BASE_URL": "https://earwig-warm-hawk.ngrok-free.app",
+		"MCP_NAME": "GG"
 	}
 	/**
 	 * Smart Placement
