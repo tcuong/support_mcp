@@ -44,7 +44,11 @@
 	},
 	"vars": {
 		"API_BASE_URL": "https://earwig-warm-hawk.ngrok-free.app",
-		"MCP_NAME": "GG"
+		"MCP_NAME": "GG",
+		"DISABLED_FUNCTIONS": {
+			"JIRA": true,
+			"BACKLOG": true,
+		}
 	}
 	/**
 	 * Smart Placement
