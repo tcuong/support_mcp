@@ -143,10 +143,10 @@ export class MyMCP extends McpAgent<Env> {
 	}
 
 	private addJiraTools() {
-		if (this.env.DISABLEd_FUNCTIONS.JIRA) return;
+		if (this.env.DISABLED_FUNCTIONS.JIRA) return;
 		// Create Jira ticket
 		this.server.tool(
-			"jira:createJiraTicket",
+			"jira_createJiraTicket",
 			{
 				title: z.string().describe(toolDescriptions.createJiraTicket.params.title),
 				description: z.string().describe(toolDescriptions.createJiraTicket.params.description),
@@ -162,7 +162,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Reply Jira ticket
 		this.server.tool(
-			"jira:replyJiraTicket",
+			"jira_replyJiraTicket",
 			{
 				url: z.string().describe(toolDescriptions.replyJiraTicket.params.url),
 				content: z.string().describe(toolDescriptions.replyJiraTicket.params.content),
@@ -177,7 +177,7 @@ export class MyMCP extends McpAgent<Env> {
 		);
 		// List Jira handling tickets by app type
 		this.server.tool(
-			"jira:listJiraHandlingTickets",
+			"jira_listJiraHandlingTickets",
 			{
 				url: z.string().describe(toolDescriptions.listJiraHandlingTickets.params.url),
 				appNo: z.string().describe(toolDescriptions.listJiraHandlingTickets.params.appNo)
@@ -191,11 +191,11 @@ export class MyMCP extends McpAgent<Env> {
 	}
 
 	private addBacklogTools() {
-		if (this.env.DISABLEd_FUNCTIONS.BACKLOG) return;
+		if (this.env.DISABLED_FUNCTIONS.BACKLOG) return;
 
 		// List handling ticket by app type
 		this.server.tool(
-			"backlog:listBacklogHandlingTickets",
+			"backlog_listBacklogHandlingTickets",
 			{
 				appNo: z.string()
 					.transform(val => val.toUpperCase())
@@ -209,7 +209,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Reply backlog ticket
 		this.server.tool(
-			"backlog:replyBacklogTicket",
+			"backlog_replyBacklogTicket",
 			{
 				url: z.string().describe(toolDescriptions.replyBacklogTicket.params.url),
 				content: z.string().describe(toolDescriptions.replyBacklogTicket.params.content),
@@ -226,7 +226,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Create backlog ticket
 		this.server.tool(
-			"backlog:createBacklogTicket",
+			"backlog_createBacklogTicket",
 			{
 				title: z.string().describe(toolDescriptions.createBacklogTicket.params.title),
 				description: z.string().describe(toolDescriptions.createBacklogTicket.params.description),
@@ -245,7 +245,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Read first unread notification from Backlog
 		this.server.tool(
-			"backlog:readFirstUnreadNotification",
+			"backlog_readFirstUnreadNotification",
 			{},
 			{ description: toolDescriptions.readFirstUnreadNotification.description },
 			async () => {
@@ -255,7 +255,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Read all notifications from Backlog
 		this.server.tool(
-			"backlog:readAllNotifications",
+			"backlog_readAllNotifications",
 			{},
 			{ description: toolDescriptions.readAllNotifications.description },
 			async () => {
@@ -265,12 +265,12 @@ export class MyMCP extends McpAgent<Env> {
 	}
 
 	private addTeamsTools() {
-		if (this.env.DISABLEd_FUNCTIONS.TEAMS) return;
+		if (this.env.DISABLED_FUNCTIONS.TEAMS) return;
 
 		
 		// Reply in Teams
 		this.server.tool(
-			"teams:replyInTeams",
+			"teams_replyInTeams",
 			{
 				text: z.string().describe(toolDescriptions.replyInTeams.params.text),
 				url: z.string().optional().describe(toolDescriptions.replyInTeams.params.url),
@@ -287,7 +287,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Read mentions from Teams
 		this.server.tool(
-			"teams:readMentions",
+			"teams_readMentions",
 			{},
 			{ description: toolDescriptions.readMentions.description },
 			async () => {
@@ -297,7 +297,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Read message from mention by number or ID
 		this.server.tool(
-			"teams:readMessageFromMention",
+			"teams_readMessageFromMention",
 			{
 				mentionNo: z.number().min(1).optional().describe(toolDescriptions.readMessageFromMention.params.mentionNo),
 				mentionId: z.string().optional().describe(toolDescriptions.readMessageFromMention.params.mentionId)
@@ -313,7 +313,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Read threads from Teams channel
 		this.server.tool(
-			"teams:readThreads",
+			"teams_readThreads",
 			{
 				channelName: z.string().describe(toolDescriptions.readThreads.params.channelName)
 			},
@@ -325,7 +325,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Create thread in Teams channel
 		this.server.tool(
-			"teams:createThread",
+			"teams_createThread",
 			{
 				title: z.string().describe(toolDescriptions.createThread.params.title),
 				content: z.string().describe(toolDescriptions.createThread.params.content),
@@ -339,7 +339,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Find Teams thread URL from ticket key
 		this.server.tool(
-			"teams:findThread",
+			"teams_findThread",
 			{
 				ticketKey: z.string().describe(toolDescriptions.findThread.params.ticketKey),
 				appNo: z.enum(["SK", "KN", "N", "DMINI", "ZET"]).optional().describe(toolDescriptions.findThread.params.appNo)
@@ -352,10 +352,10 @@ export class MyMCP extends McpAgent<Env> {
 	}
 
 	private addSlackTools() {
-		if (this.env.DISABLEd_FUNCTIONS.SLACK) return;
+		if (this.env.DISABLED_FUNCTIONS.SLACK) return;
 		// Read mentions from Slack
 		this.server.tool(
-			"slack:readMentionsSlack",
+			"slack_readMentionsSlack",
 			{
 				isSystem: z.boolean().optional().describe(toolDescriptions.readMentionsSlack.params.isSystem),
 				registerTodo: z.boolean().optional().describe(toolDescriptions.readMentionsSlack.params.registerTodo)
@@ -371,7 +371,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Read mention by mentionId from Slack
 		this.server.tool(
-			"slack:readMentionByMentionId",
+			"slack_readMentionByMentionId",
 			{
 				mentionId: z.string().describe(toolDescriptions.readMentionByMentionId.params.mentionId),
 				isSystem: z.boolean().optional().describe(toolDescriptions.readMentionByMentionId.params.isSystem)
@@ -386,7 +386,7 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Reply message in Slack thread
 		this.server.tool(
-			"slack:replyMessageSlack",
+			"slack_replyMessageSlack",
 			{
 				threadUrl: z.string().describe(toolDescriptions.replyMessageSlack.params.threadUrl),
 				content: z.string().describe(toolDescriptions.replyMessageSlack.params.content),
