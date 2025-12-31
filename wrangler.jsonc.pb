@@ -26,19 +26,21 @@
 		"bindings": [
 			{
 				"class_name": "MyMCP",
-				"name": "MCP_OBJECT"
+				"name": "MCP_OBJECT",
 			}
 		]
 	},
 	"observability": {
 		"enabled": true
 	},
-	"build": {
-		"external": ["ai"]
-	},
-	"vars": {
+		"vars": {
 		"API_BASE_URL": "https://unadvisable-katerine-dictatorial.ngrok-free.dev",
-		"MCP_NAME": "PB"
+		"MCP_NAME": "PB",
+		"DISABLED_FUNCTIONS": {
+			"JIRA": true,
+			"BACKLOG": true,
+			"SLACK": true
+		}
 	}
 	/**
 	 * Smart Placement
