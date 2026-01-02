@@ -442,7 +442,7 @@ Error responses:
 		}
 	},
 
-	analyzeImage: {
+	analyzeFile: {
 		description: `Analyze an uploaded file using AI and return a description or analysis based on the provided prompt.
 
 Response format (200):
