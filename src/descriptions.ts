@@ -554,6 +554,27 @@ Error responses:
 		params: {
 			url: "URL or ID of the Notion page to read (e.g., https://www.notion.so/page-id or abc123-page-id)"
 		}
+	},
+
+	readIssue: {
+		description: `Read content from a Redmine issue. Sends the Redmine issue URL and returns detailed issue information including subject, status, description, priority, and assignee.
+
+Response format (200):
+{
+  "subject": "Issue title",
+  "status": "New",
+  "description": "Detailed issue description...",
+  "priority": "Normal",
+  "assignee": "Nguyen Van A",
+  "ticketKey": "34616"
+}
+
+Error responses:
+- 400: Invalid request (missing url or invalid url)
+- 500: Server error`,
+		params: {
+			url: "URL of the Redmine issue to read (e.g., https://happy.plan-b.love/issues/34616)"
+		}
 	}
 } as const;
 

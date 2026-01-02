@@ -53,7 +53,8 @@ export class MyMCP extends McpAgent<Env> {
 		this.addSlackTools();
 		this.addTeamsTools();
 		this.addNotionTools();
-
+		this.addRedmineTools();
+		
 		// Browse tool that calls Zensho API
 		this.server.tool(
 			"browse",
@@ -415,6 +416,20 @@ export class MyMCP extends McpAgent<Env> {
 			{ description: toolDescriptions.readPage.description },
 			async ({ url }) => {
 				return this.makeApiCall('/api/notion/readPage', { url });
+			}
+		);
+	}
+
+	private addRedmineTools() {
+		if (this.env.DISABLED_FUNCTIONS.REDMINE) return;
+
+		// Read issue from Redmine
+		this.server.tool(
+			"redmine_readIssue",
+			{ url: z.string().describe(toolDescriptions.readIssue.params.url) },
+			{ description: toolDescriptions.readIssue.description },
+			async ({ url }) => {
+				return this.makeApiCall('/api/redmine/readIssue', { url });
 			}
 		);
 	}
