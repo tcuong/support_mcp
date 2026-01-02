@@ -24,7 +24,7 @@ Error responses:
 - 400: Invalid request (missing/wrong parameters)
 - 500: Server error`,
 		params: {
-			url: "The URL or key to browse. Supports: Jira issue URL/key (e.g., ZEN2025-2651), Backlog URL/key, Teams message URL",
+			url: "The URL or key to browse. Supports: Jira issue URL/key (e.g., ZEN2025-2651), Backlog URL/key, Teams message URL, Slack Url",
 			oneCommentOnly: "If response data is too large (ResponseTooLargeError), set to true to fetch less data. Default: false"
 		}
 	},
@@ -442,7 +442,7 @@ Error responses:
 		}
 	},
 
-	analyzeImage: {
+	analyzeFile: {
 		description: `Analyze an uploaded file using AI and return a description or analysis based on the provided prompt.
 
 Response format (200):
