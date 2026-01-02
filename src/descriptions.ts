@@ -538,6 +538,22 @@ Error responses:
 			content: "Content of the message to send (supports @mention)",
 			isSystem: "Use system browser (default: false)"
 		}
+	},
+
+	readPage: {
+		description: `Read content from a Notion page. Sends the Notion page URL or ID and returns the extracted text content.
+
+Response format (200):
+{
+  "content": "Extracted text content from the Notion page..."
+}
+
+Error responses:
+- 400: Invalid request (missing pageId)
+- 500: Server error`,
+		params: {
+			url: "URL or ID of the Notion page to read (e.g., https://www.notion.so/page-id or abc123-page-id)"
+		}
 	}
 } as const;
 

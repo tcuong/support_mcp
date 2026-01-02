@@ -48,6 +48,12 @@ export class MyMCP extends McpAgent<Env> {
 	}
 
 	async init() {
+		this.addJiraTools();
+		this.addBacklogTools();
+		this.addSlackTools();
+		this.addTeamsTools();
+		this.addNotionTools();
+
 		// Browse tool that calls Zensho API
 		this.server.tool(
 			"browse",
@@ -60,11 +66,6 @@ export class MyMCP extends McpAgent<Env> {
 				return this.makeApiCall('/api/common/browse', { url, oneCommentOnly: oneCommentOnly ?? false });
 			}
 		);
-
-		this.addJiraTools();
-		this.addBacklogTools();
-		this.addSlackTools();
-		this.addTeamsTools();
 
 		// Search tool required by ChatGPT
 		this.server.tool(
@@ -401,6 +402,22 @@ export class MyMCP extends McpAgent<Env> {
 		);
 		
 	}	
+
+	private addNotionTools() {
+		if (this.env.DISABLED_FUNCTIONS.NOTION) return;
+
+		// Read page from Notion
+		this.server.tool(
+			"notion_readPage",
+			{
+				url: z.string().describe(toolDescriptions.readPage.params.url)
+			},
+			{ description: toolDescriptions.readPage.description },
+			async ({ url }) => {
+				return this.makeApiCall('/api/notion/readPage', { url });
+			}
+		);
+	}
 }
 
 
