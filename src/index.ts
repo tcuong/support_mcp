@@ -128,12 +128,12 @@ export class MyMCP extends McpAgent<Env> {
 
 		// Analyze image/file using AI
 		this.server.tool(
-			"analyzeImage",
+			"analyzeFile",
 			{
-				fileId: z.string().describe(toolDescriptions.analyzeImage.params.fileId),
-				prompt: z.string().optional().describe(toolDescriptions.analyzeImage.params.prompt)
+				fileId: z.string().describe(toolDescriptions.analyzeFile.params.fileId),
+				prompt: z.string().optional().describe(toolDescriptions.analyzeFile.params.prompt)
 			},
-			{ description: toolDescriptions.analyzeImage.description },
+			{ description: toolDescriptions.analyzeFile.description },
 			async ({ fileId, prompt }) => {
 				const body: Record<string, unknown> = { fileId };
 				if (prompt) body.prompt = prompt;
