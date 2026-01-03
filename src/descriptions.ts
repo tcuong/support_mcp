@@ -270,7 +270,7 @@ Error responses:
 	},
 
 	readThreads: {
-		description: `Read list of threads from a Microsoft Teams channel. Automatically scrolls up to load at least 10 threads if initially fewer than 10.
+		description: `Read list of threads from a Microsoft Teams channel. Automatically scrolls up to load at least 10 threads if initially fewer than 10. Either channelName or channelUrl must be provided.
 
 Response format (200):
 [
@@ -295,7 +295,8 @@ Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`,
 		params: {
-			channelName: "The Teams channel name to read threads from. Allowed values: KN, SK, ZET, N, DMINI, GENERAL"
+			channelName: "The Teams channel name to read threads from. Allowed values: KN, SK, ZET, N, DMINI, GENERAL. Required if channelUrl is not provided.",
+			channelUrl: "Direct URL of the Teams channel to read threads from. Required if channelName is not provided."
 		}
 	},
 

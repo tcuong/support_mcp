@@ -317,11 +317,15 @@ export class MyMCP extends McpAgent<Env> {
 		this.server.tool(
 			"teams_readThreads",
 			{
-				channelName: z.string().describe(toolDescriptions.readThreads.params.channelName)
+				channelName: z.string().optional().describe(toolDescriptions.readThreads.params.channelName),
+				channelUrl: z.string().optional().describe(toolDescriptions.readThreads.params.channelUrl)
 			},
 			{ description: toolDescriptions.readThreads.description },
-			async ({ channelName }) => {
-				return this.makeApiCall('/api/teams/readThreads', { channelName });
+			async ({ channelName, channelUrl }) => {
+				const body: Record<string, unknown> = {};
+				if (channelName) body.channelName = channelName;
+				if (channelUrl) body.channelUrl = channelUrl;
+				return this.makeApiCall('/api/teams/readThreads', body);
 			}
 		);
 
