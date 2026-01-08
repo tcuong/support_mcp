@@ -68,7 +68,8 @@ Error responses:
 			url: "The backlog ticket URL or key to reply to (e.g., DEV_005_SPO-7012)",
 			content: "The content of the comment to post",
 			shouldAssign: "Whether to assign the issue to the first person mentioned in the comment. If the ticket is still within your responsibility scope, set to false; otherwise set to true.",
-			attachedFileIds: "Optional list of uploaded file IDs (images or other attachments) to attach to the reply"
+			attachedFileIds: "Optional list of uploaded file IDs (images or other attachments) to attach to the reply",
+			shouldCloseTicket: "Whether to close the ticket (change status to '完了') after replying or not. Default is false. Optional."
 		}
 	},
 

@@ -215,11 +215,13 @@ export class MyMCP extends McpAgent<Env> {
 				content: z.string().describe(toolDescriptions.replyBacklogTicket.params.content),
 				shouldAssign: z.boolean().describe(toolDescriptions.replyBacklogTicket.params.shouldAssign),
 				attachedFileIds: z.array(z.string()).optional().describe(toolDescriptions.replyBacklogTicket.params.attachedFileIds),
+				shouldCloseTicket: z.boolean().optional().describe(toolDescriptions.replyBacklogTicket.params.shouldCloseTicket),
 			},
 			{ description: toolDescriptions.replyBacklogTicket.description },
-			async ({ url, content, shouldAssign, attachedFileIds }) => {
+			async ({ url, content, shouldAssign, attachedFileIds, shouldCloseTicket }) => {
 				const body: Record<string, unknown> = { url, content, shouldAssign };
 				if (attachedFileIds) body.attachedFileIds = attachedFileIds;
+				if (shouldCloseTicket !== undefined) body.shouldCloseTicket = shouldCloseTicket;
 				return this.makeApiCall('/api/backlog/replyIssue', body);
 			}
 		);
