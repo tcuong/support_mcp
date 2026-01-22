@@ -54,6 +54,7 @@ export class MyMCP extends McpAgent<Env> {
 		this.addTeamsTools();
 		this.addNotionTools();
 		this.addRedmineTools();
+		this.addGitTools();
 		
 		// Browse tool that calls Zensho API
 		this.server.tool(
@@ -434,6 +435,43 @@ export class MyMCP extends McpAgent<Env> {
 			{ description: toolDescriptions.readIssue.description },
 			async ({ url }) => {
 				return this.makeApiCall('/api/redmine/readIssue', { url });
+			}
+		);
+	}
+
+	private addGitTools() {
+		if (this.env.DISABLED_FUNCTIONS.GIT) return;
+
+		// Read Pull Request from GitHub
+		this.server.tool(
+			"git_readPullRequest",
+			{
+				url: z.string().describe(toolDescriptions.readPullRequest.params.url)
+			},
+			{ description: toolDescriptions.readPullRequest.description },
+			async ({ url }) => {
+				return this.makeApiCall('/api/git/readPullRequest', { url });
+			}
+		);
+
+		// Update Pull Request info to Google Sheet
+		this.server.tool(
+			"git_updatePullRequest",
+			{
+				prLink: z.string().describe(toolDescriptions.updatePullRequest.params.prLink),
+				status: z.string().optional().describe(toolDescriptions.updatePullRequest.params.status),
+				title: z.string().optional().describe(toolDescriptions.updatePullRequest.params.title),
+				target: z.string().optional().describe(toolDescriptions.updatePullRequest.params.target),
+				notionPage: z.string().optional().describe(toolDescriptions.updatePullRequest.params.notionPage)
+			},
+			{ description: toolDescriptions.updatePullRequest.description },
+			async ({ prLink, status, title, target, notionPage }) => {
+				const body: Record<string, unknown> = { prLink };
+				if (status) body.status = status;
+				if (title) body.title = title;
+				if (target) body.target = target;
+				if (notionPage) body.notionPage = notionPage;
+				return this.makeApiCall('/api/git/updatePullRequest', body);
 			}
 		);
 	}

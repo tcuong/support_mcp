@@ -11,13 +11,14 @@ Response format (200):
   "parentContent": "Parent content (for Teams thread starter)",
   "teamsUrl": "URL of Teams message if available (only when type is teams or when issue has link to Teams)",
   "attachedFileIds": ["file-id-1", "file-id-2"],
-  "jiraKey": "ZEN2025-123" (if browsing Jira issue),
-  "backlogKey": "DEV_ZET_APP-266" (if browsing Backlog issue),
-  "backlogLatestContent": {
-    "title": "Backlog issue title",
-    "comments": "Latest comments from Backlog issue",
-    "backlogKey": "DEV_ZET_APP-266"
-  } (if browsing Jira issue with link to Backlog, can be null or empty object)
+  "relatedRedmineTicket": {
+    "subject": "Redmine issue title",
+    "status": "Issue status",
+    "description": "Issue description",
+    "priority": "Issue priority",
+    "assignee": "Assigned person",
+    "ticketKey": "12345"
+  } (if browsing Teams message with Redmine URL in parentContent, can be null or empty object)
 }
 
 Error responses:
@@ -575,6 +576,66 @@ Error responses:
 - 500: Server error`,
 		params: {
 			url: "URL of the Redmine issue to read (e.g., https://happy.plan-b.love/issues/34616)"
+		}
+	},
+
+	readPullRequest: {
+		description: `Read detailed information from a GitHub Pull Request. Returns PR info (title, body, state, author, files, commits), diff content, and associated Redmine ticket if found in the PR title.
+
+Response format (200):
+{
+  "prInfo": {
+    "title": "DBI/12345 - Fix login bug",
+    "body": "Description of the PR",
+    "state": "open",
+    "author": { "login": "developer-name" },
+    "headRefName": "feature/fix-login",
+    "baseRefName": "main",
+    "files": [
+      { "path": "src/login.js", "changeType": "modified" }
+    ],
+    "commits": [
+      { "messageHeadline": "Fix login validation" }
+    ]
+  },
+  "prDiff": [
+    { "file": "src/login.js", "status": "modified", "diff": "@@ -10,7 +10,7 @@ ..." }
+  ],
+  "ticket": {
+    "subject": "Login bug fix",
+    "status": "In Progress",
+    "description": "Ticket description...",
+    "priority": "High",
+    "assignee": "Developer Name",
+    "ticketKey": "12345"
+  }
+}
+
+Error responses:
+- 400: Invalid request (missing url or invalid URL format)
+- 500: Server error`,
+		params: {
+			url: "URL of the GitHub Pull Request (e.g., https://github.com/plan-b-co-jp/repo-name/pull/123)"
+		}
+	},
+
+	updatePullRequest: {
+		description: `Update Pull Request information to Google Sheet for tracking. Includes: title, status, target branch, PR link and Notion page link.
+
+Response format (200):
+{
+  "message": "Updated succesfully"
+}
+
+Error responses:
+- 400: Invalid request (missing required information)
+- 500: Server error`,
+		params: {
+			prLink: "URL of the GitHub Pull Request (e.g., https://github.com/plan-b-co-jp/repo-name/pull/123)",
+			status: "Status of the PR (open/closed/merged)",
+			title: "Title of the PR",
+			target: "Target branch of the PR (e.g., main, develop)",
+			notionPage: "URL of the related Notion page"
 		}
 	}
 } as const;
