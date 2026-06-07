@@ -296,7 +296,7 @@ Error responses:
 - 400: Invalid request (missing or wrong parameters)
 - 500: Server error`,
 		params: {
-			channelName: "The Teams channel name to read threads from. Allowed values: KN, SK, ZET, N, DMINI, GENERAL"
+			channelName: "The Teams channel name to read threads from. Allowed values: KN, SK, ZET, N, DMINI, GENERAL, CMS, SKF"
 		}
 	},
 
@@ -316,7 +316,7 @@ Error responses:
 		params: {
 			title: "The title of the thread/post",
 			content: "The content of the thread/post",
-			channelName: "The Teams channel name to create thread in. Allowed values: KN, SK, ZET, N, DMINI, GENERAL"
+			channelName: "The Teams channel name to create thread in. Allowed values: KN, SK, ZET, N, DMINI, GENERAL, CMS, SKF"
 		}
 	},
 
