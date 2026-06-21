@@ -30,7 +30,7 @@ Error responses:
 	},
 
 	listBacklogHandlingTickets: {
-		description: `List all backlog handling tickets for a specific app type (N, KN, SK, ZET, DMINI). Case-insensitive.
+		description: `List all backlog handling tickets for a specific app type (N, KN, SK, ZET, DMINI, SKF). Case-insensitive.
 
 Response format (200):
 {
@@ -47,7 +47,7 @@ Error responses:
 - 400: Bad request (missing or invalid appNo)
 - 500: Server error`,
 		params: {
-			appNo: "The app type to list backlog handling tickets for. Allowed values: N, KN, SK, ZET, DMINI (case-insensitive)"
+			appNo: "The app type to list backlog handling tickets for. Allowed values: N, KN, SK, ZET, DMINI (case-insensitive), SKF"
 		}
 	},
 
@@ -74,7 +74,7 @@ Error responses:
 	},
 
 	createBacklogTicket: {
-		description: `Create a new backlog ticket with a title, description, and app type (N, KN, SK, ZET, DMINI). Case-insensitive.
+		description: `Create a new backlog ticket with a title, description, and app type (N, KN, SK, ZET, DMINI, SKF). Case-insensitive.
 
 Response format (200):
 {
@@ -91,13 +91,13 @@ Error responses:
 		params: {
 			title: "The title of the backlog issue",
 			description: "The detailed description of the backlog issue",
-			appNo: "The app type for the backlog issue. Allowed values: N, KN, SK, ZET, DMINI (case-insensitive)",
+			appNo: "The app type for the backlog issue. Allowed values: N, KN, SK, SKF, ZET, DMINI (case-insensitive)",
 			attachedFileIds: "Optional list of uploaded file IDs (images or other attachments) to attach when creating the issue"
 		}
 	},
 
 	createJiraTicket: {
-		description: `Create a new Jira ticket with a title, description, and type (N, KN, SK, ZET, DMINI). Case-insensitive.
+		description: `Create a new Jira ticket with a title, description, and type (N, KN, SK, SKF, ZET, DMINI). Case-insensitive.
 
 Response format (200):
 {
@@ -111,7 +111,8 @@ Error responses:
 		params: {
 			title: "The title of the Jira issue",
 			description: "The detailed description of the Jira issue",
-			type: "The app type for the Jira issue. Allowed values: N, KN, SK, ZET, DMINI (case-insensitive)"
+			type: "The app type for the Jira issue. Allowed values: Task, Bug. Default value: Task",
+			project: "The Jira project to create the issue in. Allowed values: ZEN2025 (default), SKF (case-insensitive)"
 		}
 	},
 
@@ -139,7 +140,7 @@ Error responses:
 	},
 
 	search: {
-		description: `Search for tickets on Backlog based on text query and app type (N, KN, SK, ZET, DMINI). Returns list of matching tickets.
+		description: `Search for tickets on Backlog based on text query and app type (N, KN, SK, SKF, ZET, DMINI). Returns list of matching tickets. For SKF (the SK app rewritten in Flutter), make a SINGLE call with appNo="SKF" — the server internally searches both the SK and SKF Backlog projects and returns the merged results. Do NOT issue separate calls for SK and SKF.
 
 Response format (200):
 [
@@ -158,7 +159,7 @@ Error responses:
 - 500: Server error`,
 		params: {
 			query: "The search query to find tickets (e.g., version number like 1.1.1, keywords like 'bug fix')",
-			appNo: "The app type to search tickets for. Allowed values: N, KN, SK, ZET, DMINI (case-insensitive)"
+			appNo: "The app type to search tickets for. Allowed values: N, KN, SK, SKF, ZET, DMINI (case-insensitive). Use a single appNo per call. Passing SKF makes the server search both the SK and SKF projects and return merged results in one response — do not call SK and SKF separately."
 		}
 	},
 
@@ -355,7 +356,7 @@ Error responses:
 - 500: Server error`,
 		params: {
 			ticketKey: "Ticket key or URL (e.g., ZEN2025-1234, DEV_005_SPO-7012, or full URL of Jira/Backlog issue)",
-			appNo: "App type (SK, KN, N, DMINI, ZET). If thread is not found and appNo is provided, returns 5 most recent threads from appNo channel and 5 from GENERAL channel."
+			appNo: "App type (SK, SKF, KN, N, DMINI, ZET). If thread is not found and appNo is provided, returns 5 most recent threads from appNo channel and 5 from GENERAL channel."
 		}
 	},
 
@@ -381,7 +382,7 @@ Error responses:
 - 500: Server error`,
 		params: {
 			url: "Jira project versions page URL (e.g., https://pm.gem-corp.tech/projects/ZEN2025/versions)",
-			appNo: "App type to filter versions by (e.g., ZET, KN, SK, Mini)"
+			appNo: "App type to filter versions by (e.g., ZET, KN, SK, dMini, SKF)"
 		}
 	},
 

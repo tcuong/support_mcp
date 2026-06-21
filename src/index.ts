@@ -153,10 +153,16 @@ export class MyMCP extends McpAgent<Env> {
 				type: z.string()
 					.transform(val => val.toUpperCase())
 					.describe(toolDescriptions.createJiraTicket.params.type),
+				project: z.string()
+					.transform(val => val.toUpperCase())
+					.optional()
+					.describe(toolDescriptions.createJiraTicket.params.project),
 			},
 			{ description: toolDescriptions.createJiraTicket.description },
-			async ({ title, description, type }) => {
-				return this.makeApiCall('/api/jira/createIssue', { title, description, type });
+			async ({ title, description, type, project }) => {
+				const body: Record<string, unknown> = { title, description, type };
+				if (project) body.project = project;
+				return this.makeApiCall('/api/jira/createIssue', body);
 			}
 		);
 
